@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ruhhali.app"
@@ -23,6 +23,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "ruhhali"
+    "scheme": "ruhhali",
+    "backgroundColor": "#0D1117"
   }
 }

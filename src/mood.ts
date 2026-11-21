@@ -105,6 +105,20 @@ function hit(text: string, kw: string) {
 const label = (kw: string) => kw.replace(/^=/, '').trim();
 
 const TITLE_WEIGHT = 2; // şarkı adında geçen kelime
+const WEAK_TITLE_WEIGHT = 1; // şarkı adında geçen ama çok yaygın kelime
+const NOW_PLAYING_WEIGHT = 1.6; // şu an çalan şarkı en çok etkiler
+
+// Şarkı sözlerinde ÇOK sık geçen, tek başına duygu söylemeyen kelimeler: sözlerde sayılmaz,
+// şarkı adında geçerse yarım ağırlık alır (ör. "yol" neredeyse her Türkçe şarkıda geçer).
+const WEAK = new Set([
+  '=yol', 'yollar', 'yolun', 'yolum', 'yön', 'nereye', 'where', 'find', 'road', 'lost',
+  'gece', 'night', '=ay', 'aya', 'ayın', 'moon', 'sev', 'güzel', 'love', 'baby', 'kalp', 'kalbim', 'canım', 'gönül', 'my heart',
+  'hayat', 'life', 'zaman', 'time', 'dünya', 'neden', 'why', 'yeni', 'ağır', 'uyku', 'sleep', 'heavy',
+  '=dön', 'dönsen', 'dönmez', 'geri dön', 'dönüş', 'uzak', '=eski', 'eskiden', 'home', '=ev', 'evim', 'evimiz', 'evine',
+  'yarın', 'tomorrow', 'ışık', 'light', 'ruh', 'soul', 'sessiz', 'kimse', 'nobody', 'no one', 'boşluk', 'empty',
+  'hadi', 'güneş', 'sabah', 'morning', 'deniz', 'rüzgar', 'yağmur', 'rain', 'dua', 'allah', 'rabbim', 'belki', 'maybe',
+  'bilmiyorum', 'don t know', 'başla', 'begin', 'uçmak', 'fly', 'rise', 'hisset', 'hisler', 'kalp', 'run', '=run', 'running',
+]);
 const LYRIC_WEIGHT = 0.6; // sözlerde geçen her FARKLI kelime (nakarat tekrarı bir kez sayılır)
 const LYRIC_CAP = 5; // bir şarkının sözleri bir hâle en fazla bu kadar farklı kelimeyle katkı verir
 
@@ -122,12 +136,12 @@ export function recentTracks(all: Track[], now = new Date()): Track[] {
 export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
   const tracks = recentTracks(allTracks, now);
   const scores = empty();
-  const clues: { weight: number; text: string }[] = [];
+  const clues: { weight: number; song: string; text: string }[] = [];
   const moods = Object.keys(KEYWORDS) as MoodId[];
 
   tracks.forEach((t, i) => {
     // Son dinlenen şarkılar daha ağır basar
-    const w = Math.pow(0.82, i); // en yeni şarkı 1, 5. şarkı ~0.45, 10. şarkı ~0.17
+    const w = t.playedAt ? Math.pow(0.82, i) : NOW_PLAYING_WEIGHT; // şu an çalan en etkili; 5. şarkı ~0.45
     const title = normalize(t.name);
     const lyrics = t.lyrics ? normalize(t.lyrics) : '';
     const genreText = normalize(t.genres.join(' | '));
@@ -135,16 +149,17 @@ export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
     for (const mood of moods) {
       const titleKw = KEYWORDS[mood].find((kw) => hit(title, kw));
       if (titleKw) {
-        scores[mood] += TITLE_WEIGHT * w;
-        clues.push({ weight: TITLE_WEIGHT * w, text: `"${t.name}" adı → ${label(titleKw)}` });
+        const tw = (WEAK.has(titleKw) ? WEAK_TITLE_WEIGHT : TITLE_WEIGHT) * w;
+        scores[mood] += tw;
+        clues.push({ weight: tw, song: t.name, text: `"${t.name}" adı → ${label(titleKw)}` });
       }
       if (lyrics) {
-        const found = KEYWORDS[mood].filter((kw) => hit(lyrics, kw)).slice(0, LYRIC_CAP);
+        const found = KEYWORDS[mood].filter((kw) => !WEAK.has(kw) && hit(lyrics, kw)).slice(0, LYRIC_CAP);
         if (found.length) {
           const add = found.length * LYRIC_WEIGHT * w;
           scores[mood] += add;
           if (found.length >= 2) {
-            clues.push({ weight: add, text: `"${t.name}" sözleri → ${MOOD_LABELS[mood]}: ${found.map(label).join(', ')}` });
+            clues.push({ weight: add, song: t.name, text: `"${t.name}" sözleri → ${MOOD_LABELS[mood]}: ${found.map(label).join(', ')}` });
           }
         }
       }
@@ -152,7 +167,13 @@ export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
     }
   });
 
-  const evidence = clues.sort((x, y) => y.weight - x.weight).slice(0, 6).map((c) => c.text);
+  // En güçlü ipuçları; tek bir şarkı listeyi doldurmasın diye şarkı başına en fazla 2 ipucu
+  const perSong: Record<string, number> = {};
+  const evidence = clues
+    .sort((x, y) => y.weight - x.weight)
+    .filter((c) => (perSong[c.song] = (perSong[c.song] ?? 0) + 1) <= 2)
+    .slice(0, 6)
+    .map((c) => c.text);
   const withLyrics = tracks.filter((t) => t.lyrics).length;
   if (tracks.length) evidence.push(`Son ${tracks.length} şarkına bakıldı (en yenisi en etkili); ${withLyrics} tanesinin sözleri bulundu`);
 
