@@ -7,11 +7,11 @@ import { Track } from './spotify';
 
 const KEYWORDS: Record<MoodId, string[]> = {
   huzun: [
-    'ağla', 'gözyaşı', 'hüzün', 'keder', 'dert', 'acı', 'yara', 'kırık', 'ölüm', 'veda', 'gitti', 'elveda', 'yalnız bırak',
-    'sad', 'cry', 'tears', 'broken', 'hurt', 'pain', 'goodbye', 'lost', 'alone', 'sorry', 'grief', 'blue', 'die',
+    'ağla', 'gözyaşı', 'hüzün', 'keder', 'dert', 'acı', 'yara', 'kırık', 'veda', 'gitti', 'elveda', 'mahzun',
+    'sad', 'cry', 'tears', 'broken', 'hurt', 'pain', 'goodbye', 'lost', 'grief', 'blue', 'die', 'funeral',
   ],
   kaygi: [
-    'korku', 'kork', 'endişe', 'kaygı', 'karanlık', 'kaos', 'nefes', 'uykusuz', 'deli', 'kaybol', 'sis',
+    'korku', 'kork', 'endişe', 'kaygı', 'karanlık', 'kaos', 'uykusuz', 'deli', 'kaybol', 'sis', 'tedirgin',
     'anxiety', 'anxious', 'fear', 'scared', 'panic', 'pressure', 'stress', 'nervous', 'insomnia', 'dark', 'chaos', 'help',
   ],
   ofke: [
@@ -19,26 +19,66 @@ const KEYWORDS: Record<MoodId, string[]> = {
     'rage', 'angry', 'hate', 'fight', 'war', 'kill', 'revenge', 'fire', 'burn', 'mad', 'scream', 'riot', 'enemy',
   ],
   ozlem: [
-    'özle', 'hasret', 'sıla', 'gurbet', 'uzak', 'hatıra', 'anı', 'yalnız', 'gece', 'ay ', 'sensiz', 'dön', 'beni unutma',
-    'miss', 'missing', 'lonely', 'far away', 'memories', 'remember', 'home', 'without you', 'come back', 'night', 'moon',
+    'özle', 'hasret', 'sıla', 'gurbet', 'uzak', 'hatıra', 'sensiz', 'dön', 'beni unutma', 'eski', 'memleket', 'çocukluk',
+    'miss', 'far away', 'memories', 'remember', 'home', 'without you', 'come back', 'nostalgia', 'used to', 'old days',
+  ],
+  yalnizlik: [
+    'yalnız', 'tek başına', 'kimse', 'kimsesiz', 'sessiz', 'boşluk', 'issız', 'terk', 'gece', 'ay ',
+    'lonely', 'alone', 'nobody', 'no one', 'empty', 'solitude', 'isolation', 'by myself', 'night', 'moon',
+  ],
+  ask: [
+    'aşk', 'sev', 'sevgili', 'kalbim', 'yarim', 'yare', 'canım', 'gönül', 'öp', 'gözlerin', 'birtanem', 'meftun',
+    'love', 'lover', 'kiss', 'darling', 'romance', 'baby', 'my heart', 'crush', 'valentine', 'forever yours',
+  ],
+  dostluk: [
+    'dost', 'arkadaş', 'kardeş', 'birlikte', 'beraber', 'kanka', 'yoldaş', 'el ele', 'omuz',
+    'friend', 'together', 'brother', 'sister', 'buddy', 'homie', 'crew', 'we are', 'count on me', 'stand by me',
   ],
   nese: [
-    'dans', 'oyna', 'eğlen', 'gül', 'mutlu', 'neşe', 'parti', 'yaz', 'güneş', 'aşk', 'sevgilim', 'hadi',
-    'happy', 'dance', 'party', 'sunshine', 'summer', 'love', 'fun', 'smile', 'good', 'celebrate', 'baby', 'shine',
+    'dans', 'oyna', 'eğlen', 'gül', 'mutlu', 'neşe', 'parti', 'yaz', 'güneş', 'hadi', 'şen',
+    'happy', 'dance', 'party', 'sunshine', 'summer', 'fun', 'smile', 'good', 'celebrate', 'shine', 'groove',
   ],
   huzur: [
-    'huzur', 'sakin', 'deniz', 'rüzgar', 'yağmur', 'dua', 'ilahi', 'sabah', 'nefes al', 'sükût', 'ney',
-    'calm', 'peace', 'quiet', 'ocean', 'rain', 'breathe', 'morning', 'slow', 'gentle', 'serene', 'lullaby', 'dream',
+    'huzur', 'sakin', 'deniz', 'rüzgar', 'yağmur', 'dua', 'ilahi', 'sabah', 'nefes', 'sükût', 'ney', 'bahar',
+    'calm', 'peace', 'quiet', 'ocean', 'rain', 'breathe', 'morning', 'slow', 'gentle', 'serene', 'lullaby',
+  ],
+  varolus: [
+    'neden', 'niçin', 'hayat', 'zaman', 'sonsuz', 'evren', 'ölüm', 'kimim', 'anlam', 'var ol', 'yok ol', 'dünya', 'fani', 'yıldız',
+    'why', 'life', 'time', 'universe', 'infinity', 'meaning', 'exist', 'who am i', 'void', 'space', 'eternal', 'mortal', 'stars',
+  ],
+  sezgi: [
+    'hisset', 'hisler', 'sezgi', 'rüya', 'iç ses', 'ruh', 'sırr', 'sırlar', 'gizem', 'bilinç', 'kalp', 'gönül gözü', 'ilham', 'ayna',
+    'intuition', 'soul', 'spirit', 'feel', 'mystery', 'secret', 'vision', 'inner', 'dream', 'third eye', 'awake', 'mirror',
+  ],
+  umut: [
+    'umut', 'ümit', 'yarın', 'yeni', 'başla', 'şafak', 'ışık', 'kanat', 'uçmak', 'uçalım', 'yüksel', 'güçlü',
+    'hope', 'tomorrow', 'rise', 'new day', 'light', 'wings', 'fly', 'begin', 'dawn', 'brave', 'stronger', 'better days',
+  ],
+  pismanlik: [
+    'pişman', 'özür', 'affet', 'hata', 'keşke', 'günah', 'geri al', 'suç', 'vicdan', 'tövbe',
+    'sorry', 'regret', 'forgive', 'mistake', 'apolog', 'wish i', 'guilty', 'my fault', 'take it back',
+  ],
+  yorgunluk: [
+    'yorgun', 'yoruldum', 'bitkin', 'uyku', 'tüken', 'ağır', 'bıktım', 'yeter', 'dinlen',
+    'tired', 'exhausted', 'sleep', 'numb', 'heavy', 'drained', 'burnout', 'weary', 'give up',
   ],
 };
 
 const GENRES: Record<MoodId, string[]> = {
-  huzun: ['sad', 'arabesk', 'emo', 'slowcore', 'turkish folk', 'türkü', 'fado', 'blues'],
+  huzun: ['sad', 'arabesk', 'emo', 'turkish folk', 'türkü', 'fado', 'blues'],
   kaygi: ['dark', 'trip hop', 'industrial', 'drill', 'phonk', 'shoegaze'],
   ofke: ['metal', 'hardcore', 'punk', 'rage', 'grunge', 'trap', 'turkish hip hop', 'rap'],
-  ozlem: ['indie', 'singer-songwriter', 'özgün', 'turkish singer-songwriter', 'acoustic', 'bedroom pop', 'dream pop'],
+  ozlem: ['özgün', 'turkish singer-songwriter', 'nostalgia', 'oldies', 'turkish classical', 'türk sanat', 'anadolu'],
+  yalnizlik: ['bedroom pop', 'sad lo-fi', 'slowcore', 'sadcore'],
+  ask: ['r&b', 'soul', 'romantic', 'bolero', 'love song', 'latin pop'],
+  dostluk: ['anadolu rock', 'country', 'folk rock', 'reggae'],
   nese: ['dance', 'pop', 'edm', 'house', 'disco', 'reggaeton', 'funk', 'turkish pop', 'afrobeat', 'k-pop'],
-  huzur: ['ambient', 'classical', 'lo-fi', 'lofi', 'jazz', 'new age', 'sufi', 'ilahi', 'nasheed', 'meditation', 'piano', 'tasavvuf'],
+  huzur: ['ambient', 'classical', 'lo-fi', 'lofi', 'jazz', 'sufi', 'ilahi', 'nasheed', 'meditation', 'piano', 'tasavvuf'],
+  varolus: ['post-rock', 'progressive', 'art rock', 'experimental', 'neoclassical', 'cinematic'],
+  sezgi: ['psychedelic', 'dream pop', 'ethereal', 'new age', 'mantra'],
+  umut: ['gospel', 'inspirational', 'anthem', 'worship', 'motivational'],
+  pismanlik: ['singer-songwriter', 'acoustic', 'ballad'],
+  yorgunluk: ['downtempo', 'sleep', 'chillout', 'chill'],
 };
 
 export type MoodResult = {
@@ -48,7 +88,7 @@ export type MoodResult = {
   evidence: string[]; // kullanıcıya gösterilecek ipuçları
 };
 
-const empty = (): Record<MoodId, number> => ({ huzun: 0, kaygi: 0, ofke: 0, ozlem: 0, nese: 0, huzur: 0 });
+const empty = () => Object.fromEntries(Object.keys(KEYWORDS).map((k) => [k, 0])) as Record<MoodId, number>;
 
 function normalize(s: string) {
   // Noktalama işaretlerini boşluğa çevir; anahtar kelimeler kelime başından eşleşir
@@ -80,8 +120,9 @@ export function detectMood(tracks: Track[], now = new Date()): MoodResult {
   // Gece geç saatte dinleme: özlem / hüzün yönüne hafif kaydır
   const hour = now.getHours();
   if (hour >= 0 && hour < 5) {
-    scores.ozlem += 1;
-    scores.huzun += 0.5;
+    scores.yalnizlik += 0.7;
+    scores.ozlem += 0.7;
+    scores.varolus += 0.5;
     evidence.push('Gece geç saatte dinliyorsun');
   }
 

@@ -5,8 +5,8 @@ Spotify'da dinlediğin şarkılardan o anki ruh hâlini tahmin eden ve sana uygu
 ## Nasıl çalışır?
 
 1. Spotify hesabınla bağlanırsın (yalnızca okuma izni: son dinlenenler + şu an çalan).
-2. Uygulama son ~30 şarkının adını, sanatçı türlerini ve dinleme saatini puanlar ve 6 hâlden birini tahmin eder:
-   Hüzünlü · Kaygılı · Öfkeli · Özlem/Yalnızlık · Neşeli · Huzurlu
+2. Uygulama son ~30 şarkının adını, sanatçı türlerini ve dinleme saatini puanlar ve 14 hâlden birini tahmin eder:
+   Hüzün · Kaygı · Öfke · Özlem · Yalnızlık · Aşk · Dostluk · Neşe · Huzur · Varoluş · Sezgi · Umut · Pişmanlık · Yorgunluk
 3. O hâle uygun, elle derlenmiş listeden en az bir ayet ve bir hadis gösterir. Tahmin yanlışsa tek dokunuşla düzeltebilirsin.
 
 > Not: Spotify, Kasım 2024'ten beri yeni uygulamalara şarkıların "valence/energy" verisini (audio-features) vermiyor. Bu yüzden tahmin şarkı adları ve türlere dayanıyor ve kesin değil; uygulama nedenini "Neden böyle düşündüm?" bölümünde gösteriyor.

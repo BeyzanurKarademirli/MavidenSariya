@@ -4,7 +4,9 @@
 // önce her metni kuran.diyanet.gov.tr ve hadislerin.diyanet.gov.tr üzerinden
 // bir ilahiyatçıya kontrol ettirmeniz önerilir.
 
-export type MoodId = 'huzun' | 'kaygi' | 'ofke' | 'ozlem' | 'nese' | 'huzur';
+export type MoodId =
+  | 'huzun' | 'kaygi' | 'ofke' | 'ozlem' | 'yalnizlik' | 'ask' | 'dostluk'
+  | 'nese' | 'huzur' | 'varolus' | 'sezgi' | 'umut' | 'pismanlik' | 'yorgunluk';
 
 export type Mood = {
   id: MoodId;
@@ -19,12 +21,20 @@ export type Hadith = { kind: 'hadis'; text: string; source: string };
 export type Item = Ayah | Hadith;
 
 export const MOODS: Record<MoodId, Mood> = {
-  huzun: { id: 'huzun', label: 'Hüzünlü', emoji: '🌧️', color: '#4A6FA5', description: 'Kalbin biraz ağır görünüyor.' },
-  kaygi: { id: 'kaygi', label: 'Kaygılı', emoji: '🌪️', color: '#7B6D8D', description: 'Zihnin meşgul, için rahat değil gibi.' },
-  ofke: { id: 'ofke', label: 'Öfkeli', emoji: '🔥', color: '#B5483B', description: 'İçinde bir gerginlik, bir hırs var.' },
-  ozlem: { id: 'ozlem', label: 'Özlem / Yalnızlık', emoji: '🌙', color: '#3E5C76', description: 'Birini ya da bir şeyi özlüyorsun.' },
-  nese: { id: 'nese', label: 'Neşeli', emoji: '☀️', color: '#D08C2F', description: 'Enerjin yüksek, keyfin yerinde.' },
-  huzur: { id: 'huzur', label: 'Huzurlu', emoji: '🍃', color: '#4F8A6B', description: 'Sakin ve dingin bir haldesin.' },
+  huzun: { id: 'huzun', label: 'Hüzün', emoji: '🌧️', color: '#4A6FA5', description: 'Kalbin biraz ağır görünüyor.' },
+  kaygi: { id: 'kaygi', label: 'Kaygı', emoji: '🌪️', color: '#7B6D8D', description: 'Zihnin meşgul, için rahat değil gibi.' },
+  ofke: { id: 'ofke', label: 'Öfke', emoji: '🔥', color: '#B5483B', description: 'İçinde bir gerginlik, bir hırs var.' },
+  ozlem: { id: 'ozlem', label: 'Özlem', emoji: '🌙', color: '#3E5C76', description: 'Birini, bir yeri ya da bir zamanı özlüyorsun.' },
+  yalnizlik: { id: 'yalnizlik', label: 'Yalnızlık', emoji: '🕯️', color: '#55606E', description: 'Kendini biraz yalnız hissediyorsun.' },
+  ask: { id: 'ask', label: 'Aşk', emoji: '❤️', color: '#B03A5B', description: 'Kalbin birine ya da bir şeye bağlanmış.' },
+  dostluk: { id: 'dostluk', label: 'Dostluk', emoji: '🤝', color: '#C0763A', description: 'Sevdiklerinle bir arada olmanın havası var.' },
+  nese: { id: 'nese', label: 'Neşe', emoji: '☀️', color: '#D08C2F', description: 'Enerjin yüksek, keyfin yerinde.' },
+  huzur: { id: 'huzur', label: 'Huzur', emoji: '🍃', color: '#4F8A6B', description: 'Sakin ve dingin bir hâldesin.' },
+  varolus: { id: 'varolus', label: 'Varoluş', emoji: '🌌', color: '#2E3A59', description: 'Hayatın anlamını, nereden gelip nereye gittiğini düşünüyorsun.' },
+  sezgi: { id: 'sezgi', label: 'Sezgi', emoji: '🔮', color: '#5B4B8A', description: 'İç sesine, kalbine kulak veriyorsun.' },
+  umut: { id: 'umut', label: 'Umut', emoji: '🌅', color: '#C9874B', description: 'Yeni bir başlangıca hazırlanıyorsun.' },
+  pismanlik: { id: 'pismanlik', label: 'Pişmanlık', emoji: '🥀', color: '#6E4F5E', description: 'Geçmişte kalan bir şey içini sızlatıyor.' },
+  yorgunluk: { id: 'yorgunluk', label: 'Yorgunluk', emoji: '🌫️', color: '#6B7A80', description: 'Bedenin ya da ruhun biraz tükenmiş.' },
 };
 
 const a = (surah: string, surahNo: number, ayah: string, text: string): Ayah => ({ kind: 'ayet', surah, surahNo, ayah, text });
@@ -59,12 +69,38 @@ export const CONTENT: Record<MoodId, Item[]> = {
     h('Ebû Dâvûd, Edeb 4', 'Biriniz ayakta iken öfkelenirse otursun. Öfkesi geçerse ne âlâ; geçmezse yatsın.'),
   ],
   ozlem: [
-    a('Kâf', 50, '16', 'Biz insana şah damarından daha yakınız.'),
-    a('Bakara', 2, '152', 'Öyleyse siz beni anın ki ben de sizi anayım. Bana şükredin, sakın nankörlük etmeyin.'),
-    a('Rûm', 30, '21', 'Kendileriyle huzura kavuşmanız için size kendi cinsinizden eşler yaratması ve aranızda sevgi ve merhamet var etmesi de O\'nun varlığının delillerindendir.'),
+    a('Yûsuf', 12, '84', '(Yakup) "Ey Yusuf\'a olan hasretim!" dedi. Gözleri hüzünden ağardı; o, derdini içine gömüyordu.'),
     a('Yûsuf', 12, '87', 'Allah\'ın rahmetinden ümit kesmeyin.'),
+    a('Bakara', 2, '156', 'Biz Allah\'a aitiz ve şüphesiz O\'na döneceğiz.'),
     a('Hadîd', 57, '23', '(Bu böyledir) ki elinizden çıkana üzülmeyesiniz ve Allah\'ın size verdiği şeylerle şımarmayasınız.'),
+    h('Buhârî, Zekât 54; Müslim, Hac 462', 'Uhud, bizi seven ve bizim de kendisini sevdiğimiz bir dağdır.'),
+    h('Buhârî, Edeb 96; Müslim, Birr 165', 'Kişi sevdiği ile beraberdir.'),
+  ],
+  yalnizlik: [
+    a('Kâf', 50, '16', 'Biz insana şah damarından daha yakınız.'),
+    a('Hadîd', 57, '4', 'Nerede olursanız olun, O sizinle beraberdir.'),
+    a('Duhâ', 93, '6-8', 'O seni yetim bulup barındırmadı mı? Seni yolunu bilmez bulup doğru yola iletmedi mi? Seni yoksul bulup zengin etmedi mi?'),
+    a('Bakara', 2, '152', 'Öyleyse siz beni anın ki ben de sizi anayım.'),
+    h('Buhârî, Tevhîd 15; Müslim, Zikir 2', 'Allah buyuruyor ki: "Ben kulumun beni zannı üzereyim. O beni andığı zaman onunla beraberim. Bana bir karış yaklaşana ben bir arşın yaklaşırım; bana yürüyerek gelene ben koşarak gelirim." (Kudsî hadis)'),
+    h('Müslim, İman 232', 'İslam garip başladı ve başladığı gibi yine garip olacaktır. Ne mutlu o gariplere!'),
     h('Buhârî, Rikâk 3', 'Dünyada bir garip veya bir yolcu gibi ol.'),
+  ],
+  ask: [
+    a('Rûm', 30, '21', 'Kendileriyle huzura kavuşmanız için size kendi cinsinizden eşler yaratması ve aranızda sevgi ve merhamet var etmesi de O\'nun varlığının delillerindendir.'),
+    a('Bakara', 2, '165', 'İman edenlerin Allah\'a olan sevgisi ise çok daha güçlüdür.'),
+    a('Âl-i İmrân', 3, '31', 'De ki: "Eğer Allah\'ı seviyorsanız bana uyun ki Allah da sizi sevsin ve günahlarınızı bağışlasın."'),
+    a('Bürûc', 85, '14', 'O, çok bağışlayandır, çok sevendir (Vedûd).'),
+    h('Buhârî, Edeb 96; Müslim, Birr 165', 'Kişi sevdiği ile beraberdir.'),
+    h('Tirmizî, Menâkıb 63', 'Sizin en hayırlınız, ailesine karşı en hayırlı olanınızdır.'),
+    h('Tirmizî, Daavât 72', 'Allah\'ım! Senden seni sevmeyi, seni sevenleri sevmeyi ve beni senin sevgine ulaştıracak amelleri sevmeyi isterim.'),
+  ],
+  dostluk: [
+    a('Hucurât', 49, '10', 'Müminler ancak kardeştir. Öyleyse kardeşlerinizin arasını düzeltin.'),
+    a('Tevbe', 9, '71', 'Mümin erkekler ve mümin kadınlar birbirlerinin dostlarıdır.'),
+    a('Mâide', 5, '2', 'İyilik ve takva üzerinde yardımlaşın; günah ve düşmanlık üzerinde yardımlaşmayın.'),
+    a('Zuhruf', 43, '67', 'O gün, takva sahipleri dışındaki dostlar birbirlerine düşmandır.'),
+    h('Buhârî, Büyû 38; Müslim, Birr 146', 'İyi arkadaş ile kötü arkadaşın durumu, misk taşıyan ile körük üfleyen kimsenin durumu gibidir. Misk taşıyan ya sana ondan verir, ya sen ondan satın alırsın ya da ondan güzel bir koku duyarsın. Körük üfleyen ise ya elbiseni yakar ya da ondan kötü bir koku duyarsın.'),
+    h('Ebû Dâvûd, Edeb 16; Tirmizî, Zühd 45', 'Kişi dostunun dini üzeredir. Öyleyse her biriniz kiminle dost olduğuna baksın.'),
     h('Buhârî, İman 7; Müslim, İman 71', 'Sizden biriniz kendisi için istediğini kardeşi için de istemedikçe (gerçek anlamda) iman etmiş olmaz.'),
   ],
   nese: [
@@ -84,6 +120,53 @@ export const CONTENT: Record<MoodId, Item[]> = {
     h('Buhârî, Rikâk 15; Müslim, Zekât 120', 'Zenginlik mal çokluğu değildir. Gerçek zenginlik gönül zenginliğidir.'),
     h('Müslim, Zühd 9', 'Kendinizden aşağıdakine bakın, üstünüzdekine bakmayın. Bu, Allah\'ın size verdiği nimeti küçümsememeniz için daha uygundur.'),
     h('Müslim, Birr 34', 'Allah sizin suretlerinize ve mallarınıza bakmaz; ancak kalplerinize ve amellerinize bakar.'),
+  ],
+  varolus: [
+    a('Zâriyât', 51, '56', 'Ben cinleri ve insanları ancak bana kulluk etsinler diye yarattım.'),
+    a('Mü\'minûn', 23, '115', 'Sizi sadece boş yere yarattığımızı ve gerçekten bize döndürülmeyeceğinizi mi sandınız?'),
+    a('Mülk', 67, '2', 'O, hanginizin daha güzel amel yapacağını sınamak için ölümü ve hayatı yaratandır.'),
+    a('Âl-i İmrân', 3, '190-191', 'Göklerin ve yerin yaratılışında, gece ile gündüzün birbiri ardınca gelişinde akıl sahipleri için elbette ibretler vardır. Onlar … "Rabbimiz! Sen bunu boş yere yaratmadın" derler.'),
+    a('Fussilet', 41, '53', 'Onlara ufuklarda ve kendi nefislerinde ayetlerimizi göstereceğiz; ta ki onun hak olduğu kendilerine apaçık belli olsun.'),
+    h('Hâkim, el-Müstedrek 4/341', 'Beş şey gelmeden önce beş şeyin kıymetini bil: İhtiyarlıktan önce gençliğin, hastalıktan önce sağlığın, fakirlikten önce zenginliğin, meşguliyetten önce boş vaktin ve ölümden önce hayatın.'),
+    h('Tirmizî, Kıyâmet 25', 'Akıllı kişi, nefsini hesaba çeken ve ölümden sonrası için çalışandır.'),
+    h('Buhârî, Bed\'ü\'l-vahy 1; Müslim, İmâre 155', 'Ameller niyetlere göredir. Herkes niyetinin karşılığını alır.'),
+  ],
+  sezgi: [
+    a('Şems', 91, '7-10', 'Nefse ve onu düzenleyene, sonra da ona kötülük ve takva kabiliyetini verene andolsun ki, nefsini arındıran kurtuluşa ermiş, onu kötülüklere gömen ise ziyana uğramıştır.'),
+    a('Enfâl', 8, '29', 'Ey iman edenler! Allah\'a karşı gelmekten sakınırsanız, O size iyiyi kötüden ayırt etme yeteneği (furkan) verir.'),
+    a('Hac', 22, '46', 'Gerçek şu ki gözler kör olmaz; fakat göğüslerdeki kalpler kör olur.'),
+    a('Bakara', 2, '269', 'Allah hikmeti dilediğine verir. Kime hikmet verilmişse, ona pek çok hayır verilmiştir.'),
+    a('Âl-i İmrân', 3, '159', 'Kararını verdiğin zaman da Allah\'a tevekkül et.'),
+    h('Buhârî, İman 39; Müslim, Müsâkât 107', 'Dikkat edin! Bedende bir et parçası vardır. O düzgün olursa bütün beden düzgün olur; o bozulursa bütün beden bozulur. Dikkat edin, o kalptir.'),
+    h('Müslim, Birr 14', 'İyilik, güzel ahlaktır. Günah ise içini tırmalayan ve insanların bilmesinden hoşlanmadığın şeydir.'),
+    h('Tirmizî, Kıyâmet 60; Nesâî, Eşribe 50', 'Sana şüphe veren şeyi bırak, şüphe vermeyene bak.'),
+  ],
+  umut: [
+    a('Zümer', 39, '53', 'De ki: "Ey kendilerinin aleyhine haddi aşan kullarım! Allah\'ın rahmetinden ümidinizi kesmeyin. Şüphesiz Allah bütün günahları bağışlar."'),
+    a('Âl-i İmrân', 3, '139', 'Gevşemeyin, üzülmeyin. Eğer inanıyorsanız en üstün olan sizsiniz.'),
+    a('Talâk', 65, '2-3', 'Kim Allah\'a karşı gelmekten sakınırsa, Allah ona bir çıkış yolu açar ve onu hiç ummadığı yerden rızıklandırır.'),
+    a('İnşirâh', 94, '5-6', 'Şüphesiz güçlükle beraber bir kolaylık vardır. Evet, güçlükle beraber bir kolaylık vardır.'),
+    h('Buhârî, Tevhîd 15; Müslim, Tevbe 14', 'Allah buyuruyor ki: "Rahmetim gazabımı geçmiştir." (Kudsî hadis)'),
+    h('Ahmed b. Hanbel, Müsned 3/191; Buhârî, el-Edebü\'l-müfred 479', 'Kıyamet kopuyor olsa bile, birinizin elinde bir fidan varsa ve onu dikmeye gücü yetiyorsa, diksin.'),
+  ],
+  pismanlik: [
+    a('A\'râf', 7, '23', '(Âdem ile Havva) dediler ki: "Rabbimiz! Biz kendimize zulmettik. Eğer bizi bağışlamaz ve bize merhamet etmezsen mutlaka ziyana uğrayanlardan oluruz."'),
+    a('Furkân', 25, '70', 'Ancak tövbe eden, iman eden ve salih amel işleyenler başka. Allah onların kötülüklerini iyiliklere çevirir.'),
+    a('Hûd', 11, '114', 'Şüphesiz iyilikler kötülükleri giderir.'),
+    a('Âl-i İmrân', 3, '135', 'Onlar bir kötülük yaptıklarında veya kendilerine zulmettiklerinde Allah\'ı anarlar ve hemen günahlarının bağışlanmasını isterler. Günahları Allah\'tan başka kim bağışlar?'),
+    a('Tahrîm', 66, '8', 'Ey iman edenler! Allah\'a içtenlikle tövbe edin.'),
+    h('Tirmizî, Kıyâmet 49; İbn Mâce, Zühd 30', 'Her insan hata eder. Hata edenlerin en hayırlısı ise tövbe edenlerdir.'),
+    h('İbn Mâce, Zühd 30', 'Pişmanlık tövbedir.'),
+    h('Tirmizî, Birr 55', 'Nerede olursan ol Allah\'tan kork. Kötülüğün ardından bir iyilik yap ki onu silsin. İnsanlara güzel ahlakla davran.'),
+  ],
+  yorgunluk: [
+    a('Bakara', 2, '286', 'Allah hiç kimseyi gücünün yetmediği bir şeyle yükümlü kılmaz.'),
+    a('İnşirâh', 94, '7-8', 'Bir işi bitirince diğerine koyul. Ve yalnız Rabbine yönel.'),
+    a('Tâhâ', 20, '2', 'Biz Kur\'an\'ı sana sıkıntı çekesin diye indirmedik.'),
+    a('Ra\'d', 13, '28', 'Bilesiniz ki kalpler ancak Allah\'ı anmakla huzur bulur.'),
+    h('Buhârî, Savm 51', 'Rabbinin senin üzerinde hakkı vardır, nefsinin senin üzerinde hakkı vardır, ailenin de senin üzerinde hakkı vardır. Her hak sahibine hakkını ver.'),
+    h('Buhârî, Rikâk 18; Müslim, Müsâfirîn 216', 'Allah katında amellerin en sevimlisi, az da olsa devamlı olanıdır.'),
+    h('Buhârî, İman 29', 'Bu din kolaylıktır. Kim dini zorlaştırırsa din ona galip gelir. Orta yolu tutun, mükemmele yaklaşmaya çalışın ve müjdeleyin.'),
   ],
 };
 
