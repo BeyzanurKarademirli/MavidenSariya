@@ -508,14 +508,37 @@ function NowPlaying({ color }: { color: string }) {
 }
 
 function ItemCard({ item, theme, tag }: { item: Item; theme: Theme; tag?: string }) {
+  const [open, setOpen] = useState(false);
   const box = [styles.card, { backgroundColor: theme.card, borderColor: theme.cardBorder }];
   if (item.kind === 'ayet') {
     const r = resolveAyah(item);
+    const hasMore = r.isExcerpt || !!r.before || !!r.after;
+    const toggle = () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setOpen((o) => !o);
+    };
     return (
       <View style={box}>
         <Text style={[styles.cardKind, { color: theme.accent }]}>✦ AYET{tag ? `  ·  ${tag.toLocaleUpperCase('tr-TR')}` : ''}</Text>
-        {r.arabic && <Text style={[styles.arabic, { color: '#FFF6E0' }]}>{r.arabic}</Text>}
-        <Text style={[styles.cardText, { color: theme.text }]}>{r.meal}</Text>
+        {(open ? r.arabicFull : r.arabic) && <Text style={[styles.arabic, { color: '#FFF6E0' }]}>{open ? r.arabicFull : r.arabic}</Text>}
+        {open && r.before && (
+          <Text style={[styles.ctx, { color: theme.faint }]}>
+            ({r.before.n}) {r.before.text}
+          </Text>
+        )}
+        <Text style={[styles.cardText, { color: theme.text }]}>{open && r.isExcerpt ? r.full : r.meal}</Text>
+        {open && r.after && (
+          <Text style={[styles.ctx, { color: theme.faint }]}>
+            ({r.after.n}) {r.after.text}
+          </Text>
+        )}
+        {hasMore && (
+          <Pressable onPress={toggle} hitSlop={8}>
+            <Text style={[styles.more, { color: theme.accent }]}>
+              {open ? 'Kısalt ▴' : r.isExcerpt ? 'Tamamını ve bağlamını oku ▾' : 'Önceki ve sonraki ayetle oku ▾'}
+            </Text>
+          </Pressable>
+        )}
         <Pressable onPress={() => Linking.openURL(r.link)}>
           <Text style={[styles.source, { color: theme.faint }]}>{r.title} · Diyanet İşleri meali  ↗</Text>
         </Pressable>
@@ -568,6 +591,8 @@ const styles = StyleSheet.create({
   cardKind: { fontSize: 11, fontWeight: '800', letterSpacing: 2, marginBottom: 12 },
   arabic: { fontFamily: 'AmiriQuran_400Regular', fontSize: 24, lineHeight: 50, textAlign: 'right', writingDirection: 'rtl', marginBottom: 14 },
   cardText: { fontSize: 17, lineHeight: 27 },
+  ctx: { fontSize: 14.5, lineHeight: 22, marginVertical: 8, fontStyle: 'italic' },
+  more: { marginTop: 12, fontSize: 13, fontWeight: '700' },
   source: { marginTop: 14, fontSize: 12.5, fontStyle: 'italic' },
   progress: { textAlign: 'center', fontSize: 11.5, marginTop: 10, marginHorizontal: 32, lineHeight: 17 },
   panel: { marginHorizontal: 18, marginTop: 26, padding: 18, borderRadius: 20, borderWidth: 1 },

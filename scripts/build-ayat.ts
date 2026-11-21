@@ -15,7 +15,14 @@ const require = createRequire(import.meta.url);
 const quran: Chapter[] = JSON.parse(readFileSync(require.resolve('quran-json/dist/quran_tr.json'), 'utf8'));
 
 export type AyahPart = { verses: number[]; text: string };
-export type AyahData = { surah: string; ar: { n: number; text: string }[]; tr: AyahPart[] };
+export type AyahData = {
+  surah: string;
+  ar: { n: number; text: string }[];
+  tr: AyahPart[];
+  // Bağlam: hemen önceki ve sonraki ayet (meali, ana metinle aynı birleşik cümleyse eklenmez)
+  before?: AyahPart;
+  after?: AyahPart;
+};
 
 const out: Record<string, AyahData> = {};
 const errors: string[] = [];
@@ -43,7 +50,19 @@ for (const [mood, items] of Object.entries(CONTENT)) {
         if (last && last.text === t) last.verses.push(v.id);
         else tr.push({ verses: [v.id], text: t });
       }
-      out[key] = { surah: SURAH_NAMES[it.surahNo - 1], ar: verses.map((v) => ({ n: v.id, text: v.text })), tr };
+      const texts = new Set(tr.map((p) => p.text));
+      const neighbor = (id: number): AyahPart | undefined => {
+        const v = ch.verses.find((x) => x.id === id);
+        const t = v?.translation.trim();
+        return v && t && !texts.has(t) ? { verses: [v.id], text: t } : undefined;
+      };
+      out[key] = {
+        surah: SURAH_NAMES[it.surahNo - 1],
+        ar: verses.map((v) => ({ n: v.id, text: v.text })),
+        tr,
+        before: neighbor(from - 1),
+        after: neighbor(to + 1),
+      };
     }
     const parts = out[key].tr;
     if (it.excerpt) {

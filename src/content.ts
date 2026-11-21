@@ -109,7 +109,7 @@ const H = {
 export const CONTENT: Record<MoodId, Item[]> = {
   // ───────── Zor anlar ─────────
   huzun: [
-    a(9, '40', 'Arkadaşına (Ebu Bekir\'e) "Üzülme, Allah bizimledir" diyordu'), a(12, '18', 'artık bana güzelce sabır gerekir. Anlattıklarınıza ancak Allah\'tan yardım istenir'), a(70, '5'), a(94, '1-4'),
+    a(9, '40', 'inkar edenler onu Mekke\'den çıkardıklarında mağarada bulunan iki kişiden biri olarak Allah ona yardım etmişti. Arkadaşına (Ebu Bekir\'e) "Üzülme, Allah bizimledir" diyordu'), a(12, '18', 'artık bana güzelce sabır gerekir. Anlattıklarınıza ancak Allah\'tan yardım istenir'), a(70, '5'), a(94, '1-4'),
     a(21, '83-84', 'Eyyub da: "Başıma bir bela geldi, (Sana sığındım), Sen merhametlilerin merhametlisisin" diye Rabbine nida etmişti'), a(39, '10', 'Yalnız sabredenlere, ecirleri sonsuz olarak ödenecektir'),
     a(94, '5-6'), a(93, '3'), a(12, '86'), a(3, '139'), a(15, '97-98'), a(2, '153'),
     h('Buhârî, Merdâ 1; Müslim, Birr 52', 'Müslümanın başına gelen hiçbir yorgunluk, hastalık, keder, üzüntü, eziyet ve gam yoktur ki, ayağına batan bir diken bile olsa, Allah onu günahlarına kefaret kılmasın.'),
@@ -117,13 +117,13 @@ export const CONTENT: Record<MoodId, Item[]> = {
   ],
   yas: [
     a(2, '154'), a(3, '169', 'Allah yolunda öldürülenleri ölü saymayın, bilakis Rableri katında diridirler.'), a(21, '35'), a(64, '11'), a(16, '96'),
-    a(2, '46', 'Rablerine kavuşacaklarını ve Ona döneceklerini umanlar'),
+    a(2, '46'),
     a(2, '155-157'), a(55, '26-27'), a(29, '57'), a(3, '185', 'Her insan ölümü tadacaktır.'),
     h('Buhârî, Cenâiz 43; Müslim, Fezâil 62', 'Oğlu İbrahim vefat ettiğinde Peygamberimiz şöyle buyurdu: "Göz yaşarır, kalp hüzünlenir. Biz ise ancak Rabbimizin razı olacağı sözü söyleriz. Ey İbrahim! Senin ayrılığınla gerçekten hüzünlüyüz."'),
     h('Buhârî, Cenâiz 32; Müslim, Cenâiz 15', 'Asıl sabır, musibetin ilk geldiği andaki sabırdır.'),
   ],
   ayrilik: [
-    a(2, '229', 'Ya iyilikle tutma ya da iyilik yaparak bırakmadır.'), a(2, '237', 'Aranızdaki iyiliği unutmayın.'), a(33, '49', 'onları güzellikle serbest bırakın'), a(64, '11'),
+    a(2, '229', 'Boşanma iki defadır. Ya iyilikle tutma ya da iyilik yaparak bırakmadır.'), a(2, '237', 'bağışlamanız Allah\'tan sakınmaya daha uygundur. Aranızdaki iyiliği unutmayın.'), a(33, '49', 'onları güzellikle serbest bırakın'), a(64, '11'),
     a(12, '18', 'artık bana güzelce sabır gerekir. Anlattıklarınıza ancak Allah\'tan yardım istenir'), a(65, '7', 'Allah, güçlükten sonra kolaylık verir'), a(16, '96', 'Sizde olanlar tükenir ama, Allah katında olanlar sonsuzdur, tükenmez.'),
     a(2, '216', 'İhtimal ki hoşlanmadığınız şey sizin iyiliğinizedir ve ihtimal ki sevdiğiniz bir şey sizin kötülüğünüzedir. Siz bilmezsiniz, Allah bilir'),
     a(4, '130'), a(93, '4-5'), a(57, '23'), a(94, '5-6'),
@@ -133,7 +133,7 @@ export const CONTENT: Record<MoodId, Item[]> = {
   kaygi: [
     a(6, '17'), a(10, '107', 'Allah sana bir sıkıntı verirse, onu O\'ndan başkası gideremez. Sana bir iyilik dilerse O\'nun nimetini engelleyecek yoktur.'), a(35, '2'),
     a(9, '129', 'Allah bana yeter; O\'ndan başka tanrı yoktur, yalnız O\'na güveniyorum'), a(11, '6', 'Yeryüzünde yaşayan bütün canlıların rızkı ancak Allah\'a aittir.'), a(29, '60'), a(94, '1-4'), a(28, '24'),
-    a(13, '28'), a(65, '3', 'Allah\'a güvenen kimseye O yeter.'), a(20, '25-26', 'Musa: "Rabbim! Göğsümü genişlet, işimi kolaylaştır'),
+    a(13, '28'), a(65, '3', 'Allah, kendisine karşı gelmekten sakınan kimseye kurtuluş yolu sağlar, ona beklemediği yerden rızık verir. Allah\'a güvenen kimseye O yeter.'), a(20, '25-26', 'Musa: "Rabbim! Göğsümü genişlet, işimi kolaylaştır'),
     a(2, '186'), a(9, '51'), a(3, '173', '"Allah bize yeter. O ne güzel Vekil\'dir" dediler'),
     H.mumininHali,
     h('Ebû Dâvûd, Edeb 101', 'Allah\'ım! Rahmetini umuyorum. Beni göz açıp kapayıncaya kadar bile nefsimle baş başa bırakma. Bütün işlerimi düzelt. Senden başka ilah yoktur.'),
@@ -141,8 +141,8 @@ export const CONTENT: Record<MoodId, Item[]> = {
   ],
   korku: [
     a(2, '38', 'Benim yoluma uyanlar için artık korku yoktur, onlar üzülmeyeceklerdir'), a(28, '31', '"Ey Musa! Dön gel; korkma; şüphesiz güvende olanlardansın" denildi'), a(20, '68'), a(6, '82'), a(106, '3-4'),
-    a(28, '7', 'korkma, üzülme; Biz şüphesiz onu sana döndüreceğiz'), a(26, '62'), a(9, '40', 'Arkadaşına (Ebu Bekir\'e) "Üzülme, Allah bizimledir" diyordu'),
-    a(10, '62'), a(20, '46', 'Allah: Korkmayın, dedi; Ben sizinle beraberim; görür ve işitirim.'), a(41, '30', 'Korkmayınız, üzülmeyiniz'),
+    a(28, '7', 'korkma, üzülme; Biz şüphesiz onu sana döndüreceğiz'), a(26, '62'), a(9, '40', 'inkar edenler onu Mekke\'den çıkardıklarında mağarada bulunan iki kişiden biri olarak Allah ona yardım etmişti. Arkadaşına (Ebu Bekir\'e) "Üzülme, Allah bizimledir" diyordu'),
+    a(10, '62'), a(20, '46', 'Allah: Korkmayın, dedi; Ben sizinle beraberim; görür ve işitirim.'), a(41, '30', 'Rabbimiz Allah\'tır" deyip sonra da doğrulukta devam edenler, onları, melekler, ölümleri anında: "Korkmayınız, üzülmeyiniz, size söz verilen cennetle sevinin'),
     a(3, '175'), a(9, '51'),
     h('Tirmizî, Kıyâmet 59', 'Bil ki bütün insanlar sana bir fayda vermek için bir araya gelseler, Allah\'ın senin için yazdığından başka bir fayda veremezler. Sana bir zarar vermek için bir araya gelseler, Allah\'ın senin için yazdığından başka bir zarar veremezler.'),
     h('Ebû Dâvûd, Edeb 110; İbn Mâce, Dua 14', 'Allah\'ım! Ayıplarımı ört, korktuklarımdan beni emin kıl.'),
@@ -150,13 +150,13 @@ export const CONTENT: Record<MoodId, Item[]> = {
   ofke: [
     a(23, '96', 'Kötülüğü en iyi ile sav.'), a(17, '53'), a(41, '36'), a(7, '201'), a(42, '43'), a(16, '126-127'),
     a(21, '87-88', 'O, öfkelenerek giderken, kendisini sıkıntıya sokmayacağımızı sanmıştı; fakat sonunda karanlıklar içinde: "Senden başka tanrı yoktur, Sen münezzehsin, doğrusu ben haksızlık edenlerdenim" diye seslenmişti'),
-    a(3, '134'), a(41, '34'), a(42, '37', 'öfkelendiklerinde bile bağışlayanlar'), a(7, '199-200'),
+    a(3, '134'), a(41, '34'), a(42, '37', 'Allah katında olan; inanıp Rablerine güvenen, büyük günahlardan ve hayasızlıklardan çekinen, öfkelendiklerinde bile bağışlayanlar'), a(7, '199-200'),
     H.guclu,
     h('Buhârî, Edeb 76', 'Bir adam Peygamberimize "Bana öğüt ver" dedi. O da "Öfkelenme" buyurdu. Adam isteğini birkaç kez tekrarladı; her seferinde "Öfkelenme" buyurdu.'),
     h('Ebû Dâvûd, Edeb 4', 'Biriniz ayakta iken öfkelenirse otursun. Öfkesi geçerse ne âlâ; geçmezse yatsın.'),
   ],
   kirginlik: [
-    a(64, '14', 'siz affeder, suçlarını örter ve bağışlarsanız bilin ki Allah da bağışlar ve acır'), a(15, '85', 'O halde yumuşak ve iyi davran'), a(2, '237', 'Aranızdaki iyiliği unutmayın.'), a(60, '7'), a(42, '43'), a(41, '34'),
+    a(64, '14', 'siz affeder, suçlarını örter ve bağışlarsanız bilin ki Allah da bağışlar ve acır'), a(15, '85', 'O halde yumuşak ve iyi davran'), a(2, '237', 'bağışlamanız Allah\'tan sakınmaya daha uygundur. Aranızdaki iyiliği unutmayın.'), a(60, '7'), a(42, '43'), a(41, '34'),
     a(7, '199-200'), a(23, '96', 'Kötülüğü en iyi ile sav.'),
     a(24, '22', 'affetsinler, geçsinler. Allah\'ın sizi bağışlamasından hoşlanmaz mısınız? Allah bağışlayandır, merhametli olandır'),
     a(42, '40', 'Ama kim affeder ve barışırsa, onun ecri Allah\'a aittir.'),
@@ -180,19 +180,19 @@ export const CONTENT: Record<MoodId, Item[]> = {
     a(21, '83-84', 'Biz de onun duasını kabul etmiş ve başına gelenleri kaldırmıştık.'), a(21, '88'), a(35, '2'), a(2, '286', 'Allah kişiye ancak gücünün yeteceği kadar yükler'), a(94, '1-4'),
     a(39, '53'), a(12, '87', 'Allah\'ın rahmetinden ümidinizi kesmeyin'),
     a(15, '56', 'Zaten sapıklardan başka kim Rabbinin rahmetinden umudunu keser!'),
-    a(2, '214', 'iyi bilin ki Allah\'ın yardımı şüphesiz yakındır'), a(94, '5-6'),
+    a(2, '214', 'Peygamber ve onunla beraber müminler: "Allah\'ın yardımı ne zaman?" diyecek kadar darlığa ve zorluğa uğramışlar ve sarsılmışlardı; iyi bilin ki Allah\'ın yardımı şüphesiz yakındır'), a(94, '5-6'),
     H.rahmet, H.fidan,
   ],
   yalnizlik: [
-    a(9, '40', 'Arkadaşına (Ebu Bekir\'e) "Üzülme, Allah bizimledir" diyordu'), a(20, '46', 'Ben sizinle beraberim; görür ve işitirim.'), a(26, '62'),
-    a(58, '7', 'Üç kişinin gizli bulunduğu yerde dördüncü mutlaka O\'dur'), a(2, '115', 'nereye dönerseniz Allah\'ın yönü orasıdır'), a(21, '89'), a(28, '24'), a(93, '3'),
+    a(9, '40', 'inkar edenler onu Mekke\'den çıkardıklarında mağarada bulunan iki kişiden biri olarak Allah ona yardım etmişti. Arkadaşına (Ebu Bekir\'e) "Üzülme, Allah bizimledir" diyordu'), a(20, '46', 'Allah: Korkmayın, dedi; Ben sizinle beraberim; görür ve işitirim.'), a(26, '62'),
+    a(58, '7', 'Üç kişinin gizli bulunduğu yerde dördüncü mutlaka O\'dur; beş kişinin gizli bulunduğu yerde altıncıları mutlaka O\'dur; bunlardan az veya çok, ne olursa olsunlar nerede bulunurlarsa bulunsunlar, mutlak onlarla beraberdir.'), a(2, '115', 'nereye dönerseniz Allah\'ın yönü orasıdır'), a(21, '89'), a(28, '24'), a(93, '3'),
     a(50, '16'), a(57, '4', 'Nerede olursanız olun, O, sizinle beraberdir.'), a(93, '6-8'), a(2, '152'), a(2, '186'),
     H.kudsiYakinlik,
     h('Müslim, İman 232', 'İslam garip başladı ve başladığı gibi yine garip olacaktır. Ne mutlu o gariplere!'),
     H.garip,
   ],
   yorgunluk: [
-    a(4, '28'), a(25, '47'), a(2, '185', 'Allah size kolaylık ister, zorluk istemez.'), a(22, '78', 'dinde sizin için bir zorluk kılmamıştır'), a(73, '20', 'Kuran\'dan kolayınıza geleni okuyun'),
+    a(4, '28'), a(25, '47'), a(2, '185', 'Allah size kolaylık ister, zorluk istemez.'), a(22, '78', 'O, sizi seçmiş, babanız İbrahim\'in yolu olan dinde sizin için bir zorluk kılmamıştır.'), a(73, '20', 'Gece ve gündüzü Allah ölçer; sizin bu vakitleri takdir edemeyeceğinizi bildiğinden tevbenizi kabul etmiştir. Artık, Kuran\'dan kolayınıza geleni okuyun'),
     a(35, '34-35', 'Orada bize ne bir yorgunluk gelecek ve ne de usanç gelecektir'), a(13, '28'), a(94, '1-4'),
     a(2, '286', 'Allah kişiye ancak gücünün yeteceği kadar yükler'), a(94, '7-8'), a(20, '2'), a(78, '9'),
     a(2, '45', 'Sabır ve namazla Allah\'a sığınıp yardım isteyin'),
@@ -222,7 +222,7 @@ export const CONTENT: Record<MoodId, Item[]> = {
 
   // ───────── Gönül ─────────
   ozlem: [
-    a(28, '13'), a(28, '85', 'seni döneceğin yere döndürecektir'), a(12, '100', 'Babacığım! İşte bu, vaktiyle gördüğüm rüyanın çıkışıdır; Rabbim onu gerçekleştirdi.'),
+    a(28, '13'), a(28, '85', 'seni döneceğin yere döndürecektir'), a(12, '100', 'O zaman Yusuf: "Babacığım! İşte bu, vaktiyle gördüğüm rüyanın çıkışıdır; Rabbim onu gerçekleştirdi.'),
     a(28, '7', 'korkma, üzülme; Biz şüphesiz onu sana döndüreceğiz'), a(84, '6'), a(21, '89'), a(93, '4-5'),
     a(12, '84'), a(12, '94', 'Doğrusu ben Yusuf\'un kokusunu duyuyorum'), a(12, '87', 'Allah\'ın rahmetinden ümidinizi kesmeyin'),
     a(2, '156'), a(89, '27-30'),
@@ -230,14 +230,14 @@ export const CONTENT: Record<MoodId, Item[]> = {
     H.sevdigiIle,
   ],
   ask: [
-    a(2, '165', 'Müminlerin Allah\'ı sevmesi ise hepsinden kuvvetlidir.'), a(7, '189', 'Sizi bir nefisten yaratan ve gönlünün huzura kavuşacağı eşini de ondan var eden Allah\'tır.'),
-    a(2, '187', 'onlar sizin örtünüz, siz de onların örtülerisiniz'), a(11, '90', 'doğrusu Rabbim merhamet eder ve çok sever'), a(25, '74'), a(60, '7'),
-    a(30, '21'), a(3, '31'), a(85, '14'), a(19, '96'), a(20, '39', 'Gözümün önünde yetişesin diye seni sevimli kıldım'),
+    a(2, '165', 'İnsanlar arasında, Allah\'ı bırakıp, O\'na koştukları eşleri tanrı olarak benimseyenler ve onları, Allah\'ı severcesine sevenler vardır. Müminlerin Allah\'ı sevmesi ise hepsinden kuvvetlidir.'), a(7, '189', 'Sizi bir nefisten yaratan ve gönlünün huzura kavuşacağı eşini de ondan var eden Allah\'tır.'),
+    a(2, '187', 'Oruç tuttuğunuz günlerin gecesi kadınlarınıza yaklaşmanız size helal kılındı, onlar sizin örtünüz, siz de onların örtülerisiniz.'), a(11, '90', 'doğrusu Rabbim merhamet eder ve çok sever'), a(25, '74'), a(60, '7'),
+    a(30, '21'), a(3, '31'), a(85, '14'), a(19, '96'), a(20, '39', 'Ey Musa! Gözümün önünde yetişesin diye seni sevimli kıldım'),
     h('Tirmizî, Daavât 72', 'Allah\'ım! Senden seni sevmeyi, seni sevenleri sevmeyi ve beni senin sevgine ulaştıracak amelleri sevmeyi isterim.'),
     H.aileyeHayirli, H.sevdigiIle,
   ],
   sefkat: [
-    a(93, '9-10'), a(76, '8'), a(48, '29', 'birbirlerine merhametlidirler'), a(19, '14', 'katımızdan kalp yumuşaklığı ve safiyet verdik'), a(15, '88', 'inananları kanatların altına al'), a(16, '90'), a(2, '263'),
+    a(93, '9-10'), a(76, '8'), a(48, '29', 'Muhammed Allah\'ın elçisidir. Onun beraberinde bulunanlar, inkarcılara karşı sert, birbirlerine merhametlidirler.'), a(19, '14', 'katımızdan kalp yumuşaklığı ve safiyet verdik'), a(15, '88', 'inananları kanatların altına al'), a(16, '90'), a(2, '263'),
     a(21, '107'), a(9, '128'), a(17, '24'), a(90, '17'),
     a(3, '159', 'Allah\'ın rahmetinden dolayı, sen onlara karşı yumuşak davrandın. Eğer kaba ve katı kalbli olsaydın, şüphesiz etrafından dağılır giderlerdi.'),
     h('Buhârî, Edeb 18; Müslim, Fezâil 65', 'Merhamet etmeyene merhamet olunmaz.'),
@@ -247,8 +247,8 @@ export const CONTENT: Record<MoodId, Item[]> = {
   dostluk: [
     a(9, '71', 'Mümin erkekler ve mümin kadınlar birbirlerinin velileridir'), a(3, '103', 'Düşmandınız, kalblerinizin arasını uzlaştırdı da onun nimeti sayesinde kardeş oldunuz.'),
     a(8, '63', 'Eğer yeryüzünde olan her şeyi sarfetsen bile, sen onların kalblerini uzlaştıramazdın, ama Allah onları uzlaştırdı.'),
-    a(49, '11', 'Ey inananlar! Bir topluluk bir diğerini alaya almasın, belki de onlar kendilerinden daha iyidirler.'), a(49, '12', 'Birbirinizin suçunu araştırmayın; kimse kimseyi çekiştirmesin'),
-    a(48, '29', 'birbirlerine merhametlidirler'), a(17, '53'),
+    a(49, '11', 'Ey inananlar! Bir topluluk bir diğerini alaya almasın, belki de onlar kendilerinden daha iyidirler.'), a(49, '12', 'Birbirinizin suçunu araştırmayın; kimse kimseyi çekiştirmesin; hangi biriniz ölü kardeşinin etini yemekten hoşlanır? Ondan tiksinirsiniz'),
+    a(48, '29', 'Muhammed Allah\'ın elçisidir. Onun beraberinde bulunanlar, inkarcılara karşı sert, birbirlerine merhametlidirler.'), a(17, '53'),
     a(49, '10'), a(43, '67'),
     a(25, '27-28', 'O gün, zalim kimse ellerini ısırıp: "Keşke Peygamberle beraber bir yol tutsaydım, vay başıma gelene; keşke falancayı dost edinmeseydim.'),
     a(18, '28', 'Sabah akşam Rablerinin rızasını dileyerek O\'na yalvaranlarla beraber sen de sabret.'),
@@ -259,7 +259,7 @@ export const CONTENT: Record<MoodId, Item[]> = {
   ],
   aile: [
     a(46, '15', 'Biz insana, anne ve babasına karşı iyi davranmasını tavsiye etmişizdir; zira annesi, onu, karnında, zorluğa uğrayarak taşımış; onu güçlükle doğurmuştur.'),
-    a(19, '14', 'O, Allah\'tan sakınan ve anasına babasına karşı iyi davranan bir kimse idi'), a(19, '32', 'Yaşadığım müddetçe namaz kılmamı, zekat vermemi ve anneme iyi davranmamı emretti.'),
+    a(19, '14', 'O, Allah\'tan sakınan ve anasına babasına karşı iyi davranan bir kimse idi'), a(19, '32', 'Çocuk: "Ben şüphesiz Allah\'ın kuluyum. Bana kitap verdi ve beni peygamber yaptı, nerede olursam olayım beni mübarek kıldı. Yaşadığım müddetçe namaz kılmamı, zekat vermemi ve anneme iyi davranmamı emretti.'),
     a(31, '15', 'dünya işlerinde onlarla güzel geçin'), a(71, '28', 'Rabbim! Beni, anamı, babamı, evime inanmış olarak gireni, inanan erkek ve kadınları bağışla'), a(28, '13'),
     a(27, '19', 'Rabbim! Bana ve ana babama verdiğin nimete şükürde, hoşnut olacağın işi yapmakta beni muvaffak kıl.'), a(30, '21'),
     a(17, '23'), a(17, '24'), a(31, '14'), a(25, '74'), a(14, '41'),
@@ -318,14 +318,14 @@ export const CONTENT: Record<MoodId, Item[]> = {
     h('Müslim, Birr 34', 'Allah sizin suretlerinize ve mallarınıza bakmaz; ancak kalplerinize ve amellerinize bakar.'),
   ],
   hayranlik: [
-    a(30, '22'), a(36, '38-40'), a(31, '27'), a(18, '109'), a(27, '88'), a(59, '24'), a(40, '64'), a(67, '19'), a(95, '4'), a(6, '99', 'Ürün verdiklerinde ürünlerine, olgunlaşmalarına bir bakın.'),
+    a(30, '22'), a(36, '38-40'), a(31, '27'), a(18, '109'), a(27, '88'), a(59, '24'), a(40, '64'), a(67, '19'), a(95, '4'), a(6, '99', 'ondan bitirdiğimiz yeşilden, birbirine benzeyen ve benzemeyen yığın yığın taneler, hurmaların tomurcuklarından sarkan salkımlar, üzüm bağları, zeytin ve nar çıkardık. Ürün verdiklerinde ürünlerine, olgunlaşmalarına bir bakın.'),
     a(3, '190-191'), a(67, '3-4'), a(88, '17-20'), a(41, '53'), a(51, '20-21'),
     a(24, '35', 'Allah göklerin ve yerin Nur\'udur.'),
     h('Müslim, İman 147', 'Allah güzeldir, güzelliği sever.'),
   ],
   hayal: [
     a(47, '36', 'Doğrusu dünya hayatı oyun ve oyalanmadır.'), a(6, '32'), a(29, '64'), a(87, '16-17'), a(25, '47'),
-    a(12, '100', 'Babacığım! İşte bu, vaktiyle gördüğüm rüyanın çıkışıdır; Rabbim onu gerçekleştirdi.'), a(27, '88'),
+    a(12, '100', 'O zaman Yusuf: "Babacığım! İşte bu, vaktiyle gördüğüm rüyanın çıkışıdır; Rabbim onu gerçekleştirdi.'), a(27, '88'),
     a(12, '4'), a(39, '42'), a(30, '23'),
     a(57, '20', 'Bilin ki, dünya hayatı oyun, oyalanma, süslenme, aranızda övünme ve daha çok mal ve çocuk sahibi olmaktan ibarettir.'),
     a(18, '46'),
@@ -343,8 +343,8 @@ export const CONTENT: Record<MoodId, Item[]> = {
     h('Buhârî, Bed\'ü\'l-vahy 1; Müslim, İmâre 155', 'Ameller niyetlere göredir. Herkes niyetinin karşılığını alır.'),
   ],
   sezgi: [
-    a(47, '24'), a(50, '37'), a(26, '89', 'Allah\'a temiz bir kalble gelenden başka kimseye malın ve oğulların fayda vermeyeceği gün'), a(17, '36'), a(10, '36'),
-    a(49, '12', 'Zannın çoğundan sakının, zira zannın bir kısmı günahtır.'), a(12, '53'), a(16, '78'),
+    a(47, '24'), a(50, '37'), a(26, '89', 'İnsanların diriltileceği gün, Allah\'a temiz bir kalble gelenden başka kimseye malın ve oğulların fayda vermeyeceği gün, beni rezil etme'), a(17, '36'), a(10, '36'),
+    a(49, '12', 'Ey inananlar! Zannın çoğundan sakının, zira zannın bir kısmı günahtır.'), a(12, '53'), a(16, '78'),
     a(6, '122', 'Ölü iken kalbini diriltip, insanlar arasında yürürken önünü aydınlatacak bir nur verdiğimiz kimsenin durumu, karanlıklarda kalıp çıkamayan kimsenin durumu gibi midir?'),
     a(91, '7-10'), a(8, '29'), a(22, '46', 'Ama yalnız gözler kör olmaz, fakat göğüslerde olan kalbler de körleşir'),
     a(2, '269'), a(50, '16'), a(17, '85'),
@@ -361,17 +361,17 @@ export const CONTENT: Record<MoodId, Item[]> = {
     H.kudsiYakinlik,
   ],
   kararsizlik: [
-    a(2, '147'), a(42, '38', 'Onların işleri aralarında danışma iledir.'), a(28, '68'), a(11, '88', 'Başarım ancak Allah\'tandır'), a(9, '51'), a(64, '11'), a(10, '36'), a(17, '36'),
+    a(2, '147'), a(42, '38', 'Rablerinin çağrısına cevap verenler ve namaz kılanlar için daha iyi ve daha süreklidir. Onların işleri aralarında danışma iledir.'), a(28, '68'), a(11, '88', 'gücümün yettiği kadar ıslah etmekten başka bir dileğim yoktur. Başarım ancak Allah\'tandır, O\'na güvendim; O\'na yöneliyorum'), a(9, '51'), a(64, '11'), a(10, '36'), a(17, '36'),
     a(20, '25-26', 'Musa: "Rabbim! Göğsümü genişlet, işimi kolaylaştır'),
     a(3, '159', 'iş hakkında onlara danış, fakat karar verdin mi Allah\'a güven, doğrusu Allah güvenenleri sever'),
     a(2, '216', 'İhtimal ki hoşlanmadığınız şey sizin iyiliğinizedir ve ihtimal ki sevdiğiniz bir şey sizin kötülüğünüzedir. Siz bilmezsiniz, Allah bilir'),
-    a(18, '23-24'), a(65, '3', 'Allah\'a güvenen kimseye O yeter.'), a(6, '59'),
+    a(18, '23-24'), a(65, '3', 'Allah, kendisine karşı gelmekten sakınan kimseye kurtuluş yolu sağlar, ona beklemediği yerden rızık verir. Allah\'a güvenen kimseye O yeter.'), a(6, '59'),
     h('Buhârî, Teheccüd 25', 'Biriniz bir işe niyet ettiğinde iki rekât namaz kılsın, sonra şöyle desin: "Allah\'ım! İlminle senden hayır isterim, kudretinle senden güç isterim… Bu iş hakkımda hayırlıysa onu bana takdir et ve kolaylaştır; hayırlı değilse onu benden, beni de ondan uzaklaştır." (İstihare duası)'),
     H.supheyiBirak,
   ],
   sevk: [
-    a(73, '8'), a(17, '109'), a(19, '58', 'Rahman\'ın ayetleri onlara okunduğu zaman ağlayarak secdeye kapanırlardı'), a(23, '1-2'),
-    a(32, '16', 'vücudlarını yataklardan uzak tutup korkarak ve umarak Rablerine yalvaranlar'), a(6, '162'), a(2, '165', 'Müminlerin Allah\'ı sevmesi ise hepsinden kuvvetlidir.'), a(3, '191'), a(13, '28'),
+    a(73, '8'), a(17, '109'), a(19, '58', 'İşte bunlar Allah\'ın kendilerine nimetler sunduğu peygamberler; Adem\'in soyundan, Nuh ile beraber taşıdıklarımızdan; İbrahim ve İsmail\'in neslinden ve doğru yola erdirdiğimizden, seçip beğendiklerimizdendirler. Rahman\'ın ayetleri onlara okunduğu zaman ağlayarak secdeye kapanırlardı'), a(23, '1-2'),
+    a(32, '16', 'vücudlarını yataklardan uzak tutup korkarak ve umarak Rablerine yalvaranlar'), a(6, '162'), a(2, '165', 'İnsanlar arasında, Allah\'ı bırakıp, O\'na koştukları eşleri tanrı olarak benimseyenler ve onları, Allah\'ı severcesine sevenler vardır. Müminlerin Allah\'ı sevmesi ise hepsinden kuvvetlidir.'), a(3, '191'), a(13, '28'),
     a(8, '2', 'İnananlar ancak, o kimselerdir ki Allah anıldığı zaman kalbleri titrer, ayetleri okunduğu zaman bu onların imanlarını artırır.'),
     a(39, '23', 'Rablerinden korkanların, bu Kitap\'tan tüyleri ürperir, sonra hem derileri ve hem de kalbleri Allah\'ın zikrine yumuşar ve yatışır.'),
     a(33, '41-42'), a(7, '205'),
