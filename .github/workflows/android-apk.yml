@@ -1,0 +1,52 @@
+# Her main güncellemesinde Android APK derler ve GitHub Releases sayfasına koyar.
+# Telefondan indirmek için: https://github.com/BeyzanurKarademirli/MavidenSariya/releases/latest
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_SPOTIFY_CLIENT_ID: e88216ebc2604aa092c888bcdc5ed029
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Bağımlılıkları kur
+        run: npm ci
+
+      - name: Android projesini oluştur
+        run: npx expo prebuild --platform android --no-install
+
+      - name: APK derle
+        working-directory: android
+        run: |
+          ./gradlew assembleRelease --no-daemon
+          mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/RuhHali.apk
+
+      - name: Release oluştur
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: Ruh Hâli (sürüm ${{ github.run_number }})
+          body: |
+            Telefona kurmak için aşağıdaki **RuhHali.apk** dosyasına dokun, indir ve aç.
+            Android "bilinmeyen kaynak" uyarısı verirse: Ayarlar → Bu kaynağa izin ver → Yükle.
+          files: android/app/build/outputs/apk/release/RuhHali.apk
+          make_latest: true
