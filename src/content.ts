@@ -380,18 +380,3 @@ export const CONTENT: Record<MoodId, Item[]> = {
     h('Buhârî, Rikâk 41; Müslim, Zikir 14', 'Kim Allah\'a kavuşmayı severse, Allah da ona kavuşmayı sever.'),
   ],
 };
-
-/** Gün ve ruh hâline göre karışık ama tekrar edilebilir bir seçim yapar (en az bir ayet ve bir hadis). */
-export function pickItems(mood: MoodId, seed: number, count = 3): Item[] {
-  const list = [...CONTENT[mood]];
-  let s = seed || 1;
-  for (let i = list.length - 1; i > 0; i--) {
-    s = (s * 9301 + 49297) % 233280;
-    const j = Math.floor((s / 233280) * (i + 1));
-    [list[i], list[j]] = [list[j], list[i]];
-  }
-  const ayet = list.find((x) => x.kind === 'ayet')!;
-  const hadis = list.find((x) => x.kind === 'hadis')!;
-  const rest = list.filter((x) => x !== ayet && x !== hadis);
-  return [ayet, hadis, ...rest].slice(0, count);
-}

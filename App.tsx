@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -13,7 +13,9 @@ import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
 import { exchangeCodeAsync, makeRedirectUri, ResponseType, useAuthRequest } from 'expo-auth-session';
 
-import { GROUPS, Item, MoodId, MOODS, pickItems } from './src/content';
+import { GROUPS, Item, MoodId, MOODS } from './src/content';
+import { attachLyrics } from './src/lyrics';
+import { nextPage, Page } from './src/rotation';
 import { resolveAyah } from './src/ayat';
 import { detectMood, MoodResult } from './src/mood';
 import {
@@ -39,7 +41,9 @@ export default function App() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [result, setResult] = useState<MoodResult | null>(null);
   const [override, setOverride] = useState<MoodId | null>(null);
-  const [seed, setSeed] = useState(() => new Date().getDate() + new Date().getMonth() * 31);
+  const [page, setPage] = useState<Page | null>(null);
+  const [pageNo, setPageNo] = useState(0);
+  const [loadingText, setLoadingText] = useState('Dinlediklerine bakıyorum…');
   const [demo, setDemo] = useState(false);
 
   const [request, response, promptAsync] = useAuthRequest(
@@ -58,9 +62,12 @@ export default function App() {
     try {
       const token = await loadAccessToken();
       if (!token) return setPhase('login');
+      setLoadingText('Dinlediklerine bakıyorum…');
       const list = await fetchListening(token);
-      setTracks(list);
-      setResult(detectMood(list));
+      setLoadingText('Şarkı sözlerini okuyorum…');
+      const withLyrics = await attachLyrics(list);
+      setTracks(withLyrics);
+      setResult(detectMood(withLyrics));
       setOverride(null);
       setPhase('ready');
     } catch (e: any) {
@@ -102,13 +109,24 @@ export default function App() {
   }, [response, request, load]);
 
   const mood: MoodId = override ?? result?.mood ?? 'huzur';
-  const items = useMemo(() => pickItems(mood, seed), [mood, seed]);
+  const showContent = (phase === 'ready' && !demo) || (demo && !!override);
+
+  // Hâl değişince ya da uygulama açılınca sıradaki ayet/hadisleri getir (gösterilenler arkaya geçer)
+  const showNext = useCallback(() => {
+    nextPage(mood).then((p) => {
+      setPage(p);
+      setPageNo((n) => n + 1);
+    });
+  }, [mood]);
+  useEffect(() => {
+    if (showContent) showNext();
+  }, [showContent, showNext]);
 
   if (phase === 'checking' || phase === 'loading') {
     return (
       <Center>
         <ActivityIndicator size="large" color="#2F5D50" />
-        <Text style={styles.muted}>Dinlediklerine bakıyorum…</Text>
+        <Text style={styles.muted}>{loadingText}</Text>
       </Center>
     );
   }
@@ -185,13 +203,19 @@ export default function App() {
 
         {demo && !override && chips}
 
-        {(!demo || override) &&
-          items.map((it, i) => <ItemCard key={`${mood}-${seed}-${i}`} item={it} accent={m.color} />)}
+        {showContent &&
+          page?.items.map((it, i) => <ItemCard key={`${mood}-${pageNo}-${i}`} item={it} accent={m.color} />)}
 
-        {(!demo || override) && (
-          <Pressable style={[styles.btn, { backgroundColor: m.color, alignSelf: 'center' }]} onPress={() => setSeed((s) => s + 7)}>
-            <Text style={styles.btnText}>Başka ayet ve hadis göster</Text>
+        {showContent && (
+          <Pressable style={[styles.btn, { backgroundColor: m.color, alignSelf: 'center' }]} onPress={showNext}>
+            <Text style={styles.btnText}>Sıradaki ayet ve hadis</Text>
           </Pressable>
+        )}
+        {showContent && page && (
+          <Text style={styles.progress}>
+            {m.label} hâlinde {page.totalAyat} ayetin {page.seenAyat}. ve {page.totalHadis} hadisin {page.seenHadis}. sıradasın.
+            Hepsi bitince baştan başlar.
+          </Text>
         )}
 
         {(!demo || override) && chips}
@@ -299,6 +323,7 @@ const styles = StyleSheet.create({
   section: { fontSize: 15, fontWeight: '700', color: '#1F2D2A', marginTop: 24, marginBottom: 10, marginHorizontal: 20 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 20 },
   groupLabel: { fontSize: 12, fontWeight: '700', color: '#8A8478', letterSpacing: 1, textTransform: 'uppercase', marginHorizontal: 20, marginTop: 14, marginBottom: 8 },
+  progress: { textAlign: 'center', color: '#8A8478', fontSize: 12, marginTop: 10, marginHorizontal: 32, lineHeight: 18 },
   arabic: { fontSize: 22, lineHeight: 40, color: '#1F2D2A', textAlign: 'right', writingDirection: 'rtl', marginBottom: 12 },
   chip: { borderWidth: 1, borderColor: '#D5CFC4', borderRadius: 20, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#fff' },
   chipText: { color: '#1F2D2A', fontSize: 13 },

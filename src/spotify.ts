@@ -15,7 +15,10 @@ export type Track = {
   id: string;
   name: string;
   artists: string[];
+  album?: string;
+  durationMs?: number;
   genres: string[];
+  lyrics?: string; // LRCLIB'den gelen düz şarkı sözü (varsa)
   image?: string;
   playedAt?: string;
 };
@@ -64,7 +67,8 @@ type SpotifyTrack = {
   id: string;
   name: string;
   artists: { id: string; name: string }[];
-  album?: { images?: { url: string }[] };
+  duration_ms?: number;
+  album?: { name?: string; images?: { url: string }[] };
 };
 
 /** Sanatçı türlerini getirir. Spotify bu alanı bazı uygulamalarda kısıtlayabilir; hata olursa boş döner. */
@@ -106,6 +110,8 @@ export async function fetchListening(token: string): Promise<Track[]> {
     id: t.id,
     name: t.name,
     artists: t.artists.map((a) => a.name),
+    album: t.album?.name,
+    durationMs: t.duration_ms,
     genres: t.artists.flatMap((a) => genreMap[a.id] ?? []),
     image: t.album?.images?.[t.album.images.length - 1]?.url,
     playedAt,
