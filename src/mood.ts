@@ -108,14 +108,26 @@ const TITLE_WEIGHT = 2; // şarkı adında geçen kelime
 const LYRIC_WEIGHT = 0.6; // sözlerde geçen her FARKLI kelime (nakarat tekrarı bir kez sayılır)
 const LYRIC_CAP = 5; // bir şarkının sözleri bir hâle en fazla bu kadar farklı kelimeyle katkı verir
 
-export function detectMood(tracks: Track[], now = new Date()): MoodResult {
+const RECENT_HOURS = 3; // yalnızca son 3 saatte dinlenenler (en az MIN_TRACKS, en çok MAX_TRACKS şarkı)
+const MIN_TRACKS = 5;
+const MAX_TRACKS = 12;
+
+/** Şu an çalan + yakın zamanda dinlenen şarkıları seçer; eski dinlemeler tahmini etkilemesin. */
+export function recentTracks(all: Track[], now = new Date()): Track[] {
+  const limit = now.getTime() - RECENT_HOURS * 3600_000;
+  const recent = all.filter((t, i) => !t.playedAt || new Date(t.playedAt).getTime() >= limit || i < MIN_TRACKS);
+  return recent.slice(0, MAX_TRACKS);
+}
+
+export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
+  const tracks = recentTracks(allTracks, now);
   const scores = empty();
   const clues: { weight: number; text: string }[] = [];
   const moods = Object.keys(KEYWORDS) as MoodId[];
 
   tracks.forEach((t, i) => {
     // Son dinlenen şarkılar daha ağır basar
-    const w = 1 / (1 + i * 0.15);
+    const w = Math.pow(0.82, i); // en yeni şarkı 1, 5. şarkı ~0.45, 10. şarkı ~0.17
     const title = normalize(t.name);
     const lyrics = t.lyrics ? normalize(t.lyrics) : '';
     const genreText = normalize(t.genres.join(' | '));
@@ -142,7 +154,7 @@ export function detectMood(tracks: Track[], now = new Date()): MoodResult {
 
   const evidence = clues.sort((x, y) => y.weight - x.weight).slice(0, 6).map((c) => c.text);
   const withLyrics = tracks.filter((t) => t.lyrics).length;
-  if (tracks.length) evidence.push(`${tracks.length} şarkının ${withLyrics} tanesinin sözlerine bakıldı`);
+  if (tracks.length) evidence.push(`Son ${tracks.length} şarkına bakıldı (en yenisi en etkili); ${withLyrics} tanesinin sözleri bulundu`);
 
   // Gece geç saatte dinleme: yalnızlık / özlem / varoluş yönüne hafif kaydır
   const hour = now.getHours();

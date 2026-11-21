@@ -1,6 +1,7 @@
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   Image,
   Linking,
   Pressable,
@@ -57,8 +58,9 @@ export default function App() {
     discovery,
   );
 
-  const load = useCallback(async () => {
-    setPhase('loading');
+  // silent: ekranı "yükleniyor"a çevirmeden arka planda yenile
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setPhase('loading');
     try {
       const token = await loadAccessToken();
       if (!token) return setPhase('login');
@@ -68,13 +70,14 @@ export default function App() {
       const withLyrics = await attachLyrics(list);
       setTracks(withLyrics);
       setResult(detectMood(withLyrics));
-      setOverride(null);
+      if (!silent) setOverride(null);
       setPhase('ready');
     } catch (e: any) {
       if (e?.message === 'UNAUTHORIZED') {
         await clearToken();
         return setPhase('login');
       }
+      if (silent) return; // arka plan yenilemesi başarısızsa mevcut ekran kalsın
       setError(String(e?.message ?? e));
       setPhase('error');
     }
@@ -83,6 +86,21 @@ export default function App() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Uygulamaya geri dönünce ve açıkken her 2 dakikada bir dinlediklerini sessizce yenile
+  useEffect(() => {
+    if (phase !== 'ready' || demo) return;
+    const sub = AppState.addEventListener('change', (st) => {
+      if (st === 'active') load(true);
+    });
+    const timer = setInterval(() => {
+      if (AppState.currentState === 'active') load(true);
+    }, 120_000);
+    return () => {
+      sub.remove();
+      clearInterval(timer);
+    };
+  }, [phase, demo, load]);
 
   // Spotify'dan dönen yetki kodunu token'a çevir (PKCE, istemci sırrı gerekmez)
   useEffect(() => {
@@ -243,7 +261,7 @@ export default function App() {
               </View>
             ))}
             <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: 16 }}>
-              <Pressable style={styles.linkBtn} onPress={load}>
+              <Pressable style={styles.linkBtn} onPress={() => load()}>
                 <Text style={styles.link}>Yenile</Text>
               </Pressable>
               <Pressable

@@ -6,7 +6,7 @@ import { Track } from './spotify';
 const API = 'https://lrclib.net/api';
 const HEADERS = { 'Lrclib-Client': 'RuhHali/1.0' };
 const CACHE_PREFIX = 'lyrics:'; // Spotify şarkı kimliğine göre önbellek ("" = söz bulunamadı)
-const MAX_TRACKS = 12; // en son dinlenen şarkılardan kaç tanesinin sözüne bakılacağı
+const MAX_TRACKS = 12; // en son dinlenen şarkılardan kaç tanesinin sözüne bakılacağı (mood.ts ile aynı)
 
 type LrcRecord = { trackName: string; artistName: string; duration: number; instrumental: boolean; plainLyrics: string | null };
 
