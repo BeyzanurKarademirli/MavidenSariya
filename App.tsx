@@ -535,7 +535,7 @@ function ItemCard({ item, theme, tag }: { item: Item; theme: Theme; tag?: string
         {hasMore && (
           <Pressable onPress={toggle} hitSlop={8}>
             <Text style={[styles.more, { color: theme.accent }]}>
-              {open ? 'Kısalt ▴' : r.isExcerpt ? 'Tamamını ve bağlamını oku ▾' : 'Önceki ve sonraki ayetle oku ▾'}
+              {open ? 'Kısalt ▴' : r.isExcerpt ? 'Ayetin bir bölümü · tamamını oku ▾' : 'Önceki ve sonraki ayetle oku ▾'}
             </Text>
           </Pressable>
         )}

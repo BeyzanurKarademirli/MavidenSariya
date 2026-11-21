@@ -18,8 +18,23 @@ export type ResolvedAyah = {
   link: string;
 };
 
-// Bu uzunluktan kısa ayetler kesilmeden, tamamıyla gösterilir (bağlam kopmasın)
-const FULL_UNDER = 260;
+// Bu uzunluktan kısa ayetler kesilmeden, tamamıyla gösterilir (bağlam kopmasın).
+// Daha uzunlarda yalnızca ilgili bölüm gösterilir; o bölüm de her zaman TAM CÜMLE olur (… kullanılmaz).
+const FULL_UNDER = 450;
+// Önceki/sonraki ayet yalnızca kısaysa bağlam olarak eklenir
+const CONTEXT_MAX = 170;
+
+/** Kesiti, içinde bulunduğu cümle(ler)in başına ve sonuna kadar genişletir. */
+function toSentences(text: string, ex: string): string {
+  const i = text.indexOf(ex);
+  if (i < 0) return ex;
+  const isEnd = (k: number) => /[.!?]/.test(text[k]) && (k + 1 >= text.length || text[k + 1] === ' ' || text[k + 1] === '"');
+  let start = i;
+  while (start > 0 && !isEnd(start - 1) && !isEnd(start - 2)) start--;
+  let end = i + ex.length;
+  while (end < text.length && !isEnd(end - 1)) end++;
+  return text.slice(start, end).replace(/^["\s]+/, (m) => (m.includes('"') ? '"' : '')).trim();
+}
 
 const toArabicDigits = (n: number) => String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[+d]);
 
@@ -35,13 +50,11 @@ export function resolveAyah(item: Ayah): ResolvedAyah {
   const isExcerpt = !!(item.excerpt && part && part.length > FULL_UNDER);
   let meal = full;
   if (isExcerpt) {
-    const ex = item.excerpt!;
-    const start = part!.indexOf(ex);
-    meal = (start > 0 ? '… ' : '') + ex + (start + ex.length < part!.length ? ' …' : '');
+    meal = toSentences(part!, item.excerpt!);
   } else if (part) {
     meal = part; // kesit vardı ama ayet kısa: o kısmın tamamını göster
   }
-  const ctx = (p?: AyahPart) => (p ? { n: p.verses.join('-'), text: p.text } : undefined);
+  const ctx = (p?: AyahPart) => (p && p.text.length <= CONTEXT_MAX ? { n: p.verses.join('-'), text: p.text } : undefined);
   return {
     title,
     arabic: isExcerpt ? undefined : arabicFull,
