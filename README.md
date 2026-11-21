@@ -18,7 +18,7 @@ Ayet ve hadis metinleri `src/content.ts` içinde **sabit** bir listedir, yapay z
 1. https://developer.spotify.com/dashboard → **Create app**
    - Redirect URI: `ruhhali://callback`
    - API: *Web API*
-2. Client ID'yi kopyala ve proje kökünde `.env` dosyası oluştur:
+2. Client ID'yi kopyala ve proje kökünde `.env` dosyası oluştur (git'e eklenmez):
    ```
    EXPO_PUBLIC_SPOTIFY_CLIENT_ID=buraya_client_id
    ```
