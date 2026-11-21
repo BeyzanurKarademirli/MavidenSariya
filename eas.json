@@ -1,0 +1,10 @@
+{
+  "cli": { "appVersionSource": "remote" },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": { "EXPO_PUBLIC_SPOTIFY_CLIENT_ID": "e88216ebc2604aa092c888bcdc5ed029" }
+    }
+  }
+}
