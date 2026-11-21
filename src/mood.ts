@@ -136,7 +136,8 @@ export function recentTracks(all: Track[], now = new Date()): Track[] {
 export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
   const tracks = recentTracks(allTracks, now);
   const scores = empty();
-  const clues: { weight: number; song: string; text: string }[] = [];
+  // Her şarkı için: hangi hâle ne kadar katkı verdi ve hangi kelimelerle
+  const perTrack: { name: string; now: boolean; moods: Partial<Record<MoodId, { score: number; words: string[] }>> }[] = [];
   const moods = Object.keys(KEYWORDS) as MoodId[];
 
   tracks.forEach((t, i) => {
@@ -145,35 +146,41 @@ export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
     const title = normalize(t.name);
     const lyrics = t.lyrics ? normalize(t.lyrics) : '';
     const genreText = normalize(t.genres.join(' | '));
+    const row: (typeof perTrack)[number] = { name: t.name, now: !t.playedAt, moods: {} };
+    perTrack.push(row);
+    const note = (mood: MoodId, score: number, words: string[]) => {
+      const cur = (row.moods[mood] ??= { score: 0, words: [] });
+      cur.score += score;
+      words.forEach((wd) => !cur.words.includes(wd) && cur.words.push(wd));
+    };
 
     for (const mood of moods) {
       const titleKw = KEYWORDS[mood].find((kw) => hit(title, kw));
       if (titleKw) {
         const tw = (WEAK.has(titleKw) ? WEAK_TITLE_WEIGHT : TITLE_WEIGHT) * w;
         scores[mood] += tw;
-        clues.push({ weight: tw, song: t.name, text: `"${t.name}" adı → ${label(titleKw)}` });
+        note(mood, tw, [label(titleKw)]);
       }
       if (lyrics) {
         const found = KEYWORDS[mood].filter((kw) => !WEAK.has(kw) && hit(lyrics, kw)).slice(0, LYRIC_CAP);
         if (found.length) {
           const add = found.length * LYRIC_WEIGHT * w;
           scores[mood] += add;
-          if (found.length >= 2) {
-            clues.push({ weight: add, song: t.name, text: `"${t.name}" sözleri → ${MOOD_LABELS[mood]}: ${found.map(label).join(', ')}` });
-          }
+          note(mood, add, found.map(label));
         }
       }
       if (GENRES[mood].some((g) => genreText.includes(normalize(g).trim()))) scores[mood] += 1 * w;
     }
   });
 
-  // En güçlü ipuçları; tek bir şarkı listeyi doldurmasın diye şarkı başına en fazla 2 ipucu
-  const perSong: Record<string, number> = {};
-  const evidence = clues
-    .sort((x, y) => y.weight - x.weight)
-    .filter((c) => (perSong[c.song] = (perSong[c.song] ?? 0) + 1) <= 2)
-    .slice(0, 6)
-    .map((c) => c.text);
+  // Her şarkı bir satır: en yeniden eskiye; o şarkının en güçlü 2 hâli ve bulunan kelimeler
+  const evidence = perTrack.map((r) => {
+    const top = (Object.entries(r.moods) as [MoodId, { score: number; words: string[] }][])
+      .sort((x, y) => y[1].score - x[1].score)
+      .slice(0, 2)
+      .map(([mood, v]) => `${MOOD_LABELS[mood]} (${v.words.slice(0, 3).join(', ')})`);
+    return `"${r.name}"${r.now ? ' · şimdi' : ''} → ${top.length ? top.join(' · ') : 'belirgin bir ipucu yok'}`;
+  });
   const withLyrics = tracks.filter((t) => t.lyrics).length;
   if (tracks.length) evidence.push(`Son ${tracks.length} şarkına bakıldı (en yenisi en etkili); ${withLyrics} tanesinin sözleri bulundu`);
 
