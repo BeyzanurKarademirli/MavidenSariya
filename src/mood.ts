@@ -5,80 +5,78 @@ import { Track } from './spotify';
 // ruh hali; şarkı adı, sanatçı türleri ve dinleme saatinden basit bir puanlamayla tahmin edilir.
 // Tahmin her zaman kullanıcıya gösterilir ve kullanıcı düzeltebilir.
 
+// Anahtar kelimeler kelime BAŞINDAN eşleşir ("ağla" → "ağladım", "ağlama"). Çok kısa ve
+// başka kelimelerin başı olabilecek sözcüklerden kaçınılmıştır (ör. "yak" → "yakın" olmasın diye yok).
 const KEYWORDS: Record<MoodId, string[]> = {
-  huzun: [
-    'ağla', 'gözyaşı', 'hüzün', 'keder', 'dert', 'acı', 'yara', 'kırık', 'veda', 'gitti', 'elveda', 'mahzun',
-    'sad', 'cry', 'tears', 'broken', 'hurt', 'pain', 'goodbye', 'lost', 'grief', 'blue', 'die', 'funeral',
-  ],
-  kaygi: [
-    'korku', 'kork', 'endişe', 'kaygı', 'karanlık', 'kaos', 'uykusuz', 'deli', 'kaybol', 'sis', 'tedirgin',
-    'anxiety', 'anxious', 'fear', 'scared', 'panic', 'pressure', 'stress', 'nervous', 'insomnia', 'dark', 'chaos', 'help',
-  ],
-  ofke: [
-    'öfke', 'nefret', 'savaş', 'intikam', 'yak', 'kavga', 'isyan', 'sinir', 'yıkıl', 'bitir',
-    'rage', 'angry', 'hate', 'fight', 'war', 'kill', 'revenge', 'fire', 'burn', 'mad', 'scream', 'riot', 'enemy',
-  ],
-  ozlem: [
-    'özle', 'hasret', 'sıla', 'gurbet', 'uzak', 'hatıra', 'sensiz', 'dön', 'beni unutma', 'eski', 'memleket', 'çocukluk',
-    'miss', 'far away', 'memories', 'remember', 'home', 'without you', 'come back', 'nostalgia', 'used to', 'old days',
-  ],
-  yalnizlik: [
-    'yalnız', 'tek başına', 'kimse', 'kimsesiz', 'sessiz', 'boşluk', 'issız', 'terk', 'gece', 'ay ',
-    'lonely', 'alone', 'nobody', 'no one', 'empty', 'solitude', 'isolation', 'by myself', 'night', 'moon',
-  ],
-  ask: [
-    'aşk', 'sev', 'sevgili', 'kalbim', 'yarim', 'yare', 'canım', 'gönül', 'öp', 'gözlerin', 'birtanem', 'meftun',
-    'love', 'lover', 'kiss', 'darling', 'romance', 'baby', 'my heart', 'crush', 'valentine', 'forever yours',
-  ],
-  dostluk: [
-    'dost', 'arkadaş', 'kardeş', 'birlikte', 'beraber', 'kanka', 'yoldaş', 'el ele', 'omuz',
-    'friend', 'together', 'brother', 'sister', 'buddy', 'homie', 'crew', 'we are', 'count on me', 'stand by me',
-  ],
-  nese: [
-    'dans', 'oyna', 'eğlen', 'gül', 'mutlu', 'neşe', 'parti', 'yaz', 'güneş', 'hadi', 'şen',
-    'happy', 'dance', 'party', 'sunshine', 'summer', 'fun', 'smile', 'good', 'celebrate', 'shine', 'groove',
-  ],
-  huzur: [
-    'huzur', 'sakin', 'deniz', 'rüzgar', 'yağmur', 'dua', 'ilahi', 'sabah', 'nefes', 'sükût', 'ney', 'bahar',
-    'calm', 'peace', 'quiet', 'ocean', 'rain', 'breathe', 'morning', 'slow', 'gentle', 'serene', 'lullaby',
-  ],
-  varolus: [
-    'neden', 'niçin', 'hayat', 'zaman', 'sonsuz', 'evren', 'ölüm', 'kimim', 'anlam', 'var ol', 'yok ol', 'dünya', 'fani', 'yıldız',
-    'why', 'life', 'time', 'universe', 'infinity', 'meaning', 'exist', 'who am i', 'void', 'space', 'eternal', 'mortal', 'stars',
-  ],
-  sezgi: [
-    'hisset', 'hisler', 'sezgi', 'rüya', 'iç ses', 'ruh', 'sırr', 'sırlar', 'gizem', 'bilinç', 'kalp', 'gönül gözü', 'ilham', 'ayna',
-    'intuition', 'soul', 'spirit', 'feel', 'mystery', 'secret', 'vision', 'inner', 'dream', 'third eye', 'awake', 'mirror',
-  ],
-  umut: [
-    'umut', 'ümit', 'yarın', 'yeni', 'başla', 'şafak', 'ışık', 'kanat', 'uçmak', 'uçalım', 'yüksel', 'güçlü',
-    'hope', 'tomorrow', 'rise', 'new day', 'light', 'wings', 'fly', 'begin', 'dawn', 'brave', 'stronger', 'better days',
-  ],
-  pismanlik: [
-    'pişman', 'özür', 'affet', 'hata', 'keşke', 'günah', 'geri al', 'suç', 'vicdan', 'tövbe',
-    'sorry', 'regret', 'forgive', 'mistake', 'apolog', 'wish i', 'guilty', 'my fault', 'take it back',
-  ],
-  yorgunluk: [
-    'yorgun', 'yoruldum', 'bitkin', 'uyku', 'tüken', 'ağır', 'bıktım', 'yeter', 'dinlen',
-    'tired', 'exhausted', 'sleep', 'numb', 'heavy', 'drained', 'burnout', 'weary', 'give up',
-  ],
+  // Zor anlar
+  huzun: ['ağla', 'gözyaşı', 'hüzün', 'keder', 'dert', 'acı', 'yara', 'kırık', 'mahzun', 'gam', 'sad', 'cry', 'tears', 'broken', 'hurt', 'pain', 'grief', 'blue', 'sorrow'],
+  yas: ['ölüm', 'öldü', 'mezar', 'rahmetli', 'toprak', 'kaybettim', 'cenaze', 'ağıt', 'funeral', 'grave', 'rest in peace', 'rip', 'mourning', 'gone too soon', 'heaven knows'],
+  ayrilik: ['ayrılık', 'ayrıl', 'gitme', 'gittin', 'bitti', 'vazgeç', 'unut', 'eski sevgili', 'elveda', 'veda', 'breakup', 'break up', 'goodbye', 'let go', 'move on', 'heartbreak', 'it s over', 'we are never', 'without you'],
+  kaygi: ['endişe', 'kaygı', 'stres', 'panik', 'uykusuz', 'kaos', 'tedirgin', 'düşünce', 'anxiety', 'anxious', 'panic', 'pressure', 'stress', 'nervous', 'overthink', 'insomnia', 'chaos', 'help me'],
+  korku: ['korku', 'kork', 'kabus', 'tehlike', 'karanlık', 'canavar', 'fear', 'scared', 'afraid', 'nightmare', 'monster', 'horror', 'ghost', 'dark', 'terror'],
+  ofke: ['öfke', 'nefret', 'intikam', 'kavga', 'sinir', 'yakarım', 'yıkarım', 'hınç', 'rage', 'angry', 'hate', 'revenge', 'kill', 'burn', 'scream', 'mad', 'enemy', 'war', 'fight'],
+  kirginlik: ['kırgın', 'küs', 'incit', 'vefasız', 'ihanet', 'yalan', 'kandır', 'aldat', 'nankör', 'betray', 'liar', 'lies', 'fake', 'hurt me', 'backstab', 'trust', 'used me', 'cheat'],
+  kiskanclik: ['kıskan', 'haset', 'başkası', 'rakip', 'jealous', 'envy', 'envious', 'green eyed', 'someone else'],
+  umutsuzluk: ['çaresiz', 'umutsuz', 'dayanamı', 'boşver', 'çıkış yok', 'kurtar', 'batıyorum', 'hopeless', 'helpless', 'give up', 'no way out', 'drowning', 'falling apart', 'sinking', 'can t go on', 'save me'],
+  yalnizlik: ['yalnız', 'tek başına', 'kimse', 'kimsesiz', 'sessiz', 'boşluk', 'ıssız', 'terk', 'gece', 'ay ', 'lonely', 'alone', 'nobody', 'no one', 'empty', 'solitude', 'isolation', 'by myself', 'night', 'moon'],
+  yorgunluk: ['yorgun', 'yoruldum', 'bitkin', 'uyku', 'tüken', 'ağır', 'bıktım', 'yeter', 'dinlen', 'tired', 'exhausted', 'sleep', 'numb', 'heavy', 'drained', 'burnout', 'weary'],
+  pismanlik: ['pişman', 'özür', 'affet', 'hata', 'keşke', 'günah', 'geri al', 'suç', 'vicdan', 'tövbe', 'sorry', 'regret', 'forgive', 'mistake', 'apolog', 'wish i', 'guilty', 'my fault', 'take it back'],
+  isyan: ['isyan', 'başkaldır', 'kural', 'sistem', 'direniş', 'özgürlük', 'sokak', 'adalet', 'zulüm', 'rebel', 'riot', 'revolution', 'system', 'freedom', 'against', 'rules', 'outlaw', 'street', 'justice', 'resist'],
+  // Gönül
+  ozlem: ['özle', 'hasret', 'sıla', 'gurbet', 'uzak', 'hatıra', 'sensiz', 'dön', 'beni unutma', 'eski', 'memleket', 'çocukluk', 'miss', 'far away', 'memories', 'remember', 'home', 'come back', 'nostalgia', 'used to', 'old days'],
+  ask: ['aşk', 'sev', 'sevgili', 'kalbim', 'yarim', 'yare', 'canım', 'gönül', 'öp', 'gözlerin', 'birtanem', 'love', 'lover', 'kiss', 'darling', 'romance', 'baby', 'my heart', 'crush', 'valentine'],
+  sefkat: ['şefkat', 'merhamet', 'bebek', 'ninni', 'kucak', 'yavrum', 'sarıl', 'koru', 'tender', 'hold me', 'hug', 'lullaby', 'gentle', 'care', 'little one', 'angel', 'protect'],
+  dostluk: ['dost', 'arkadaş', 'kardeş', 'birlikte', 'beraber', 'kanka', 'yoldaş', 'el ele', 'omuz', 'friend', 'together', 'brother', 'sister', 'buddy', 'homie', 'crew', 'count on me', 'stand by me'],
+  aile: ['anne', 'annem', 'baba', 'babam', 'aile', 'evlat', 'kızım', 'oğlum', 'yuva', 'ev ', 'mother', 'mama', 'mom', 'father', 'dad', 'papa', 'family', 'daughter', 'home sweet'],
+  // Canlılık
+  nese: ['dans', 'oyna', 'eğlen', 'gül', 'mutlu', 'neşe', 'parti', 'şen', 'güneş', 'yaz', 'happy', 'fun', 'smile', 'party', 'good vibes', 'joy', 'laugh', 'sunshine', 'summer', 'dance', 'groove'],
+  cosku: ['enerji', 'koş', 'hız', 'hadi', 'haydi', 'ateş', 'çılgın', 'coş', 'energy', 'run', 'fast', 'jump', 'pump', 'alive', 'wild', 'turn up', 'unstoppable', 'go go', 'adrenaline'],
+  guc: ['güç', 'kral', 'kraliçe', 'zafer', 'şampiyon', 'kazan', 'yenilmez', 'para', 'zengin', 'power', 'king', 'queen', 'champion', 'winner', 'winning', 'victory', 'boss', 'legend', 'money', 'rich', 'hero', 'strong'],
+  sukur: ['şükür', 'şükret', 'teşekkür', 'nimet', 'hamd', 'minnet', 'grateful', 'thankful', 'thank', 'blessed', 'gratitude', 'bless'],
+  umut: ['umut', 'ümit', 'yarın', 'yeni', 'başla', 'şafak', 'ışık', 'kanat', 'uçmak', 'yüksel', 'hope', 'tomorrow', 'rise', 'new day', 'light', 'wings', 'fly', 'begin', 'dawn', 'brave', 'stronger', 'better days'],
+  // Derinlik ve dinginlik
+  huzur: ['huzur', 'sakin', 'deniz', 'rüzgar', 'yağmur', 'sabah', 'sükût', 'bahar', 'dingin', 'sessizce', 'calm', 'peace', 'quiet', 'ocean', 'rain', 'breathe', 'morning', 'slow', 'serene', 'still'],
+  hayranlik: ['güzel', 'muhteşem', 'harika', 'mucize', 'gökyüzü', 'yıldız', 'dağ', 'evren', 'beautiful', 'wonder', 'amazing', 'miracle', 'sky', 'stars', 'paradise', 'galaxy', 'universe', 'majestic'],
+  hayal: ['hayal', 'rüya', 'düş', 'bulut', 'masal', 'dalgın', 'dream', 'daydream', 'fantasy', 'cloud', 'imagine', 'fairy', 'wish', 'wonderland', 'floating'],
+  varolus: ['neden', 'niçin', 'hayat', 'zaman', 'sonsuz', 'anlam', 'var ol', 'yok ol', 'kimim', 'fani', 'dünya', 'why', 'life', 'time', 'meaning', 'exist', 'who am i', 'void', 'eternal', 'mortal', 'infinity'],
+  sezgi: ['hisset', 'hisler', 'sezgi', 'iç ses', 'ruh', 'kalp', 'sırr', 'sırlar', 'ilham', 'ayna', 'bilinç', 'intuition', 'soul', 'spirit', 'inner', 'vision', 'third eye', 'mirror'],
+  arayis: ['arıyor', 'arayış', 'ararım', 'yol', 'kayboldum', 'nereye', 'yön', 'pusula', 'search', 'seeking', 'find', 'path', 'road', 'lost', 'wander', 'journey', 'where', 'direction', 'compass'],
+  kararsizlik: ['kararsız', 'bilmiyorum', 'belki', 'acaba', 'ikilem', 'arada kaldım', 'seçim', 'maybe', 'perhaps', 'decide', 'choice', 'confused', 'don t know', 'torn', 'crossroads', 'should i', 'in between'],
+  sevk: ['ilahi', 'zikir', 'dua', 'secde', 'allah', 'hu ', 'sufi', 'semah', 'mevla', 'ya rab', 'rabbim', 'aşkın', 'hallelujah', 'praise', 'pray', 'divine', 'worship', 'holy', 'glory'],
 };
 
 const GENRES: Record<MoodId, string[]> = {
   huzun: ['sad', 'arabesk', 'emo', 'turkish folk', 'türkü', 'fado', 'blues'],
-  kaygi: ['dark', 'trip hop', 'industrial', 'drill', 'phonk', 'shoegaze'],
+  yas: ['requiem', 'elegy'],
+  ayrilik: ['breakup', 'torch song'],
+  kaygi: ['trip hop', 'industrial', 'drill', 'shoegaze'],
+  korku: ['dark ambient', 'horrorcore', 'witch house', 'darkwave'],
   ofke: ['metal', 'hardcore', 'punk', 'rage', 'grunge', 'trap', 'turkish hip hop', 'rap'],
-  ozlem: ['özgün', 'turkish singer-songwriter', 'nostalgia', 'oldies', 'turkish classical', 'türk sanat', 'anadolu'],
-  yalnizlik: ['bedroom pop', 'sad lo-fi', 'slowcore', 'sadcore'],
-  ask: ['r&b', 'soul', 'romantic', 'bolero', 'love song', 'latin pop'],
-  dostluk: ['anadolu rock', 'country', 'folk rock', 'reggae'],
-  nese: ['dance', 'pop', 'edm', 'house', 'disco', 'reggaeton', 'funk', 'turkish pop', 'afrobeat', 'k-pop'],
-  huzur: ['ambient', 'classical', 'lo-fi', 'lofi', 'jazz', 'sufi', 'ilahi', 'nasheed', 'meditation', 'piano', 'tasavvuf'],
-  varolus: ['post-rock', 'progressive', 'art rock', 'experimental', 'neoclassical', 'cinematic'],
-  sezgi: ['psychedelic', 'dream pop', 'ethereal', 'new age', 'mantra'],
-  umut: ['gospel', 'inspirational', 'anthem', 'worship', 'motivational'],
-  pismanlik: ['singer-songwriter', 'acoustic', 'ballad'],
+  kirginlik: ['sad rap', 'emo rap'],
+  kiskanclik: [],
+  umutsuzluk: ['doom', 'depressive', 'sadcore'],
+  yalnizlik: ['bedroom pop', 'sad lo-fi', 'slowcore'],
   yorgunluk: ['downtempo', 'sleep', 'chillout', 'chill'],
+  pismanlik: ['singer-songwriter', 'acoustic', 'ballad'],
+  isyan: ['punk', 'protest', 'anadolu rock', 'political hip hop', 'conscious hip hop'],
+  ozlem: ['özgün', 'nostalgia', 'oldies', 'turkish classical', 'türk sanat', 'anadolu'],
+  ask: ['r&b', 'soul', 'romantic', 'bolero', 'love song', 'latin pop'],
+  sefkat: ['lullaby', 'children'],
+  dostluk: ['country', 'folk rock', 'reggae'],
+  aile: [],
+  nese: ['dance', 'pop', 'disco', 'reggaeton', 'funk', 'turkish pop', 'afrobeat', 'k-pop'],
+  cosku: ['edm', 'house', 'techno', 'drum and bass', 'workout', 'hardstyle', 'phonk'],
+  guc: ['epic', 'trailer', 'hip hop', 'stadium'],
+  sukur: ['gospel'],
+  umut: ['inspirational', 'anthem', 'motivational'],
+  huzur: ['ambient', 'classical', 'lo-fi', 'lofi', 'jazz', 'meditation', 'piano'],
+  hayranlik: ['cinematic', 'soundtrack', 'orchestral', 'neoclassical'],
+  hayal: ['dream pop', 'chillwave', 'vaporwave', 'ethereal'],
+  varolus: ['post-rock', 'progressive', 'art rock', 'experimental'],
+  sezgi: ['psychedelic', 'new age', 'mantra'],
+  arayis: ['indie', 'indie folk', 'alternative'],
+  kararsizlik: [],
+  sevk: ['sufi', 'ilahi', 'nasheed', 'tasavvuf', 'qawwali', 'worship', 'spiritual'],
 };
 
 export type MoodResult = {
@@ -121,8 +119,9 @@ export function detectMood(tracks: Track[], now = new Date()): MoodResult {
   const hour = now.getHours();
   if (hour >= 0 && hour < 5) {
     scores.yalnizlik += 0.7;
-    scores.ozlem += 0.7;
+    scores.ozlem += 0.5;
     scores.varolus += 0.5;
+    scores.sevk += 0.3;
     evidence.push('Gece geç saatte dinliyorsun');
   }
 

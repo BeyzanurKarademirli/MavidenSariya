@@ -13,7 +13,8 @@ import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
 import { exchangeCodeAsync, makeRedirectUri, ResponseType, useAuthRequest } from 'expo-auth-session';
 
-import { ayahLink, Item, MoodId, MOODS, pickItems } from './src/content';
+import { GROUPS, Item, MoodId, MOODS, pickItems } from './src/content';
+import { resolveAyah } from './src/ayat';
 import { detectMood, MoodResult } from './src/mood';
 import {
   clearToken,
@@ -140,6 +141,34 @@ export default function App() {
 
   const m = MOODS[mood];
 
+  const chips = (
+    <>
+      <Text style={styles.section}>
+        {demo && !override ? 'Bugün hangi hâldesin?' : demo ? 'Başka bir hâl seç' : 'Doğru tahmin etmedim mi? Düzelt:'}
+      </Text>
+      {GROUPS.map((g) => (
+        <View key={g.id}>
+          <Text style={styles.groupLabel}>{g.label}</Text>
+          <View style={styles.chips}>
+            {(Object.keys(MOODS) as MoodId[])
+              .filter((id) => MOODS[id].group === g.id)
+              .map((id) => (
+                <Pressable
+                  key={id}
+                  onPress={() => setOverride(id)}
+                  style={[styles.chip, mood === id && { backgroundColor: MOODS[id].color, borderColor: MOODS[id].color }]}
+                >
+                  <Text style={[styles.chipText, mood === id && { color: '#fff' }]}>
+                    {MOODS[id].emoji} {MOODS[id].label}
+                  </Text>
+                </Pressable>
+              ))}
+          </View>
+        </View>
+      ))}
+    </>
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: '#F7F4EE' }}>
       <StatusBar style="light" />
@@ -154,20 +183,7 @@ export default function App() {
           )}
         </View>
 
-        <Text style={styles.section}>{demo ? 'Hâlini seç' : 'Doğru tahmin etmedim mi? Düzelt:'}</Text>
-        <View style={styles.chips}>
-          {(Object.keys(MOODS) as MoodId[]).map((id) => (
-            <Pressable
-              key={id}
-              onPress={() => setOverride(id)}
-              style={[styles.chip, mood === id && { backgroundColor: MOODS[id].color, borderColor: MOODS[id].color }]}
-            >
-              <Text style={[styles.chipText, mood === id && { color: '#fff' }]}>
-                {MOODS[id].emoji} {MOODS[id].label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+        {demo && !override && chips}
 
         {(!demo || override) &&
           items.map((it, i) => <ItemCard key={`${mood}-${seed}-${i}`} item={it} accent={m.color} />)}
@@ -177,6 +193,8 @@ export default function App() {
             <Text style={styles.btnText}>Başka ayet ve hadis göster</Text>
           </Pressable>
         )}
+
+        {(!demo || override) && chips}
 
         {!demo && (
           <>
@@ -223,8 +241,9 @@ export default function App() {
         )}
 
         <Text style={styles.disclaimer}>
-          Mealler özet niteliğindedir. Ayetin tam metni ve farklı mealler için kartın altındaki bağlantıyı kullanabilirsin.
-          Bu uygulama bir tahmin yapar; gerçek hâlini en iyi sen bilirsin.
+          Ayet mealleri Diyanet İşleri Başkanlığı mealinden birebir alınmıştır (kaynak: tanzil.net). Uzun ayetlerde ilgili kısım
+          gösterilir (…); tamamı ve farklı mealler için kartın altındaki bağlantıya dokunabilirsin. Hadisler kaynağıyla birlikte
+          özet olarak verilmiştir. Bu uygulama bir tahmin yapar; gerçek hâlini en iyi sen bilirsin.
         </Text>
       </ScrollView>
     </View>
@@ -232,20 +251,24 @@ export default function App() {
 }
 
 function ItemCard({ item, accent }: { item: Item; accent: string }) {
-  const isAyah = item.kind === 'ayet';
+  if (item.kind === 'ayet') {
+    const r = resolveAyah(item);
+    return (
+      <View style={[styles.card, { borderLeftColor: accent }]}>
+        <Text style={[styles.cardKind, { color: accent }]}>AYET</Text>
+        {r.arabic && <Text style={styles.arabic}>{r.arabic}</Text>}
+        <Text style={styles.cardText}>{r.meal}</Text>
+        <Pressable onPress={() => Linking.openURL(r.link)}>
+          <Text style={styles.source}>{r.title} · Diyanet İşleri meali  ↗</Text>
+        </Pressable>
+      </View>
+    );
+  }
   return (
     <View style={[styles.card, { borderLeftColor: accent }]}>
-      <Text style={[styles.cardKind, { color: accent }]}>{isAyah ? 'AYET' : 'HADİS'}</Text>
-      <Text style={styles.cardText}>{isAyah ? `“${item.text}”` : `“${item.text}”`}</Text>
-      {isAyah ? (
-        <Pressable onPress={() => Linking.openURL(ayahLink(item))}>
-          <Text style={styles.source}>
-            {item.surah} Suresi, {item.ayah}. ayet  ↗
-          </Text>
-        </Pressable>
-      ) : (
-        <Text style={styles.source}>{item.source}</Text>
-      )}
+      <Text style={[styles.cardKind, { color: accent }]}>HADİS</Text>
+      <Text style={styles.cardText}>“{item.text}”</Text>
+      <Text style={styles.source}>{item.source}</Text>
     </View>
   );
 }
@@ -275,6 +298,8 @@ const styles = StyleSheet.create({
   heroSub: { color: '#ffffffd9', marginTop: 6, textAlign: 'center' },
   section: { fontSize: 15, fontWeight: '700', color: '#1F2D2A', marginTop: 24, marginBottom: 10, marginHorizontal: 20 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 20 },
+  groupLabel: { fontSize: 12, fontWeight: '700', color: '#8A8478', letterSpacing: 1, textTransform: 'uppercase', marginHorizontal: 20, marginTop: 14, marginBottom: 8 },
+  arabic: { fontSize: 22, lineHeight: 40, color: '#1F2D2A', textAlign: 'right', writingDirection: 'rtl', marginBottom: 12 },
   chip: { borderWidth: 1, borderColor: '#D5CFC4', borderRadius: 20, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#fff' },
   chipText: { color: '#1F2D2A', fontSize: 13 },
   card: { backgroundColor: '#fff', marginHorizontal: 20, marginTop: 16, padding: 18, borderRadius: 16, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 1 },
