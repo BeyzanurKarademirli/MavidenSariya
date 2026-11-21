@@ -1,10 +1,16 @@
 # Her main güncellemesinde Android APK derler ve GitHub Releases sayfasına koyar.
-# Telefondan indirmek için: https://github.com/BeyzanurKarademirli/MavidenSariya/releases/latest
+# Telefondan indirmek için (her zaman en yeni sürüm):
+# https://github.com/BeyzanurKarademirli/MavidenSariya/releases/latest/download/RuhHali.apk
 name: Android APK
 
 on:
   push:
     branches: [main]
+    # Yalnızca belge/lisans değişikliklerinde boşuna APK derleme
+    paths-ignore:
+      - 'LICENSE'
+      - '**.md'
+      - 'screenshots/**'
   workflow_dispatch:
 
 permissions:

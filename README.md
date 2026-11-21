@@ -69,3 +69,11 @@ Spotify olmadan denemek için giriş ekranındaki **"Spotify olmadan dene"** ba�
 - Şarkı sözlerini (ör. Musixmatch) veya bir dil modelini kullanarak daha isabetli tahmin
 - Günlük bildirim: "Bugünün ayeti"
 - Favorilere ekleme ve paylaşma kartı
+
+## İndirme (Android)
+
+En yeni sürüm her zaman bu linkte: https://github.com/BeyzanurKarademirli/MavidenSariya/releases/latest/download/RuhHali.apk
+
+## Lisans
+
+Telif Hakkı (c) 2026 Beyzanur Karademirli. Tüm hakları saklıdır. Ayrıntılar ve üçüncü taraf içerikler (Diyanet meali, kütüphaneler) için `LICENSE` dosyasına bakın.
