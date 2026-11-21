@@ -2,6 +2,7 @@ import { MoodId, MOODS } from './content';
 
 const MOOD_LABELS = Object.fromEntries(Object.values(MOODS).map((m) => [m.id, m.label])) as Record<MoodId, string>;
 import { Track } from './spotify';
+import { artistKey, Model } from './learning';
 
 // Spotify, yeni uygulamalar için "audio-features" (valence/energy) uç noktasını kapattığından
 // ruh hali; şarkı adı, sanatçı türleri ve dinleme saatinden basit bir puanlamayla tahmin edilir.
@@ -89,6 +90,8 @@ export type MoodResult = {
   share: number; // 0..1: dinlediklerinin ne kadarı bu hâli işaret ediyor
   strength: 'güçlü' | 'orta' | 'zayıf';
   uncertain: boolean; // zayıfsa kullanıcıya hâlini seçmesi önerilir
+  analyzed: Track[]; // tahminde kullanılan şarkılar (en yeni başta)
+  trackWords: Record<string, Partial<Record<MoodId, string[]>>>; // şarkı → hâl → katkı veren anahtar kelimeler (öğrenme için)
   scores: Record<MoodId, number>;
   evidence: string[]; // kullanıcıya gösterilecek ipuçları
 };
@@ -136,12 +139,17 @@ export function recentTracks(all: Track[], now = new Date()): Track[] {
   return recent.slice(0, MAX_TRACKS);
 }
 
-export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
+const LEARN_TRACK_WEIGHT = 1.8; // kullanıcının bir şarkı için öğrettiği hâl
+const LEARN_ARTIST_WEIGHT = 0.7; // kullanıcının bir sanatçı için öğrettiği hâl
+
+export function detectMood(allTracks: Track[], now = new Date(), model?: Model): MoodResult {
   const tracks = recentTracks(allTracks, now);
   const moods = Object.keys(KEYWORDS) as MoodId[];
   const scores = empty();
   let totalVotes = 0;
   const evidence: string[] = [];
+  const trackWords: MoodResult['trackWords'] = {};
+  const wf = (kw: string) => model?.words[kw] ?? 1; // öğrenilmiş kelime çarpanı
 
   // Her şarkı bir "oy" verir: önce şarkının kendi içinde hangi hâli ne oranda işaret ettiği bulunur
   // (uzun sözlü şarkı tek başına baskın çıkmasın diye oranlanır), sonra yakınlığına göre ağırlıklandırılır.
@@ -154,14 +162,16 @@ export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
 
     const raw = empty();
     const words: Partial<Record<MoodId, string[]>> = {};
-    const add = (mood: MoodId, v: number, w?: string) => {
+    const tw: Partial<Record<MoodId, string[]>> = (trackWords[t.id] = {});
+    const add = (mood: MoodId, v: number, w?: string, kw?: string) => {
       raw[mood] += v;
       if (w && !(words[mood] ??= []).includes(w)) words[mood]!.push(w);
+      if (kw) (tw[mood] ??= []).push(kw);
     };
 
     for (const mood of moods) {
       const titleKw = KEYWORDS[mood].find((kw) => hit(title, kw));
-      if (titleKw) add(mood, WEAK.has(titleKw) ? WEAK_TITLE_WEIGHT : TITLE_WEIGHT, label(titleKw));
+      if (titleKw) add(mood, (WEAK.has(titleKw) ? WEAK_TITLE_WEIGHT : TITLE_WEIGHT) * wf(titleKw), label(titleKw), titleKw);
       if (lyrics) {
         let distinct = 0;
         for (const kw of KEYWORDS[mood]) {
@@ -170,12 +180,22 @@ export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
           if (!c) continue;
           distinct++;
           // Tekrar (nakarat) önemlidir ama sınırlı: 1 kez → 0.6, 2 → 0.9, 4+ → 1.2
-          add(mood, LYRIC_WEIGHT * (1 + Math.log2(Math.min(c, 4)) * 0.5), label(kw));
+          add(mood, LYRIC_WEIGHT * (1 + Math.log2(Math.min(c, 4)) * 0.5) * wf(kw), label(kw), kw);
         }
       }
       if (GENRES[mood].some((g) => genreText.includes(normalize(g).trim()))) add(mood, 0.8);
     }
     for (const [name, mood] of ARTISTS) if (artist.includes(name)) add(mood, 1.5);
+
+    // Kullanıcının öğrettikleri: bu şarkı ve sanatçıları için daha önce seçtiği/onayladığı hâller
+    const learnedTrack = model?.tracks[t.id]?.moods ?? {};
+    for (const [mood, v] of Object.entries(learnedTrack) as [MoodId, number][]) add(mood, LEARN_TRACK_WEIGHT * Math.min(v, 3), 'sen öğrettin');
+    for (const a of t.artists) {
+      const learnedArtist = model?.artists[artistKey(a)] ?? {};
+      for (const [mood, v] of Object.entries(learnedArtist) as [MoodId, number][]) {
+        if (v >= 0.5) add(mood, LEARN_ARTIST_WEIGHT * Math.min(v, 3), `${a} · öğrendiğim`);
+      }
+    }
 
     const songTotal = Object.values(raw).reduce((a, b) => a + b, 0);
     const ranked = moods.filter((m) => raw[m] > 0).sort((a, b) => raw[b] - raw[a]);
@@ -209,7 +229,7 @@ export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
   const entries = (Object.entries(scores) as [MoodId, number][]).sort((x, y) => y[1] - x[1]);
   const sum = entries.reduce((s, [, v]) => s + v, 0);
   if (!sum) {
-    return { mood: 'huzur', confidence: 0, share: 0, strength: 'zayıf', uncertain: true, scores, evidence: ['Belirgin bir ipucu bulunamadı', ...evidence] };
+    return { mood: 'huzur', confidence: 0, share: 0, strength: 'zayıf', uncertain: true, scores, analyzed: tracks, trackWords, evidence: ['Belirgin bir ipucu bulunamadı', ...evidence] };
   }
   const [topMood, topScore] = entries[0];
   const second = entries[1]?.[1] ?? 0;
@@ -219,7 +239,7 @@ export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
   const coverage = Math.min(1, totalVotes / 4); // yeterince şarkıdan kanıt var mı
   const confidence = Math.min(1, (0.6 * share + 0.4 * lead) * (0.4 + 0.6 * coverage) * 1.3);
   const strength: MoodResult['strength'] = confidence >= 0.6 ? 'güçlü' : confidence >= 0.35 ? 'orta' : 'zayıf';
-  return { mood: topMood, confidence, share, strength, uncertain: strength === 'zayıf', scores, evidence };
+  return { mood: topMood, confidence, share, strength, uncertain: strength === 'zayıf', scores, analyzed: tracks, trackWords, evidence };
 }
 
 /** Sözlerde bir anahtar kelimenin kaç kez geçtiği */

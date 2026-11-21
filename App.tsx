@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, AppState, Image, LayoutAnimation, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Animated, AppState, Image, LayoutAnimation, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AmiriQuran_400Regular, useFonts } from '@expo-google-fonts/amiri-quran';
 import * as WebBrowser from 'expo-web-browser';
@@ -12,6 +12,7 @@ import { resolveAyah } from './src/ayat';
 import { alpha, DAWN, PARTICLES, Theme, themeFor } from './src/theme';
 import { FadeIn, Float, Glow, MoodBackground, Particles, PressableScale } from './src/ui';
 import { detectMood, MoodResult } from './src/mood';
+import { learn, loadModel, Model, resetModel } from './src/learning';
 import {
   clearToken,
   discovery,
@@ -40,6 +41,9 @@ export default function App() {
   const [loadingText, setLoadingText] = useState('Dinlediklerine bakıyorum…');
   const [demo, setDemo] = useState(false);
   const [chipsExpanded, setChipsExpanded] = useState(false);
+  const [model, setModel] = useState<Model | null>(null);
+  // Geri bildirim durumu: none = sorulmadı, asking = 👎 dedi ve doğrusunu seçmesi bekleniyor, thanks = öğrenildi
+  const [fb, setFb] = useState<{ state: 'none' | 'asking' | 'thanks'; note?: string }>({ state: 'none' });
   // Kur'an yazımındaki özel işaretleri (Osmanlı/Uthmani hattı) doğru göstermek için gömülü yazı tipi
   useFonts({ AmiriQuran_400Regular });
 
@@ -64,8 +68,10 @@ export default function App() {
       const list = await fetchListening(token);
       setLoadingText('Şarkı sözlerini okuyorum…');
       const withLyrics = await attachLyrics(list);
+      const mdl = await loadModel();
+      setModel(mdl);
       setTracks(withLyrics);
-      setResult(detectMood(withLyrics));
+      setResult(detectMood(withLyrics, new Date(), mdl));
       if (!silent) setOverride(null);
       setPhase('ready');
     } catch (e: any) {
@@ -121,6 +127,32 @@ export default function App() {
       }
     })();
   }, [response, request, load]);
+
+  // Yeni bir tahmin gelince geri bildirim sorusu yeniden sorulur
+  const predicted = result?.mood;
+  useEffect(() => {
+    setFb({ state: 'none' });
+  }, [predicted]);
+
+  /** 👍 / 👎 / hâl seçimi → kişisel modeli eğit */
+  const giveFeedback = useCallback(
+    async (kind: 'confirm' | 'reject' | 'choose', chosen?: MoodId) => {
+      if (!result) return;
+      const p = result.mood;
+      if (kind === 'confirm') {
+        setModel(await learn({ kind: 'confirm', predicted: p }, result.analyzed, result.trackWords));
+        setFb({ state: 'thanks', note: `Teşekkürler! Bu şarkıları ${MOODS[p].label} ile eşleştirdim.` });
+      } else if (kind === 'reject') {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setFb({ state: 'asking' });
+      } else if (chosen) {
+        const f = chosen === p ? { kind: 'confirm' as const, predicted: p } : { kind: 'correct' as const, predicted: p, chosen };
+        setModel(await learn(f, result.analyzed, result.trackWords));
+        setFb({ state: 'thanks', note: `Öğrendim: bu şarkılar sana ${MOODS[chosen].label} hissettiriyor.` });
+      }
+    },
+    [result],
+  );
 
   const mood: MoodId = override ?? result?.mood ?? 'huzur';
   const showContent = (phase === 'ready' && !demo) || (demo && !!override);
@@ -195,7 +227,7 @@ export default function App() {
   }
 
   // ───────── Ana ekran ─────────
-  const chipsOpen = (demo && !override) || chipsExpanded || (!demo && !override && !!result?.uncertain);
+  const chipsOpen = (demo && !override) || chipsExpanded || fb.state === 'asking' || (!demo && !override && !!result?.uncertain);
   const toggleChips = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setChipsExpanded((x) => !x);
@@ -205,7 +237,7 @@ export default function App() {
     <View style={{ marginTop: 22 }}>
       <Pressable onPress={toggleChips} disabled={demo && !override} style={styles.sectionRow}>
         <Text style={[styles.section, { color: theme.text }]}>
-          {demo && !override ? 'Bugün hangi hâldesin?' : demo ? 'Başka bir hâl seç' : 'Tahminim yanlış mı? Hâlini seç'}
+          {demo && !override ? 'Bugün hangi hâldesin?' : demo ? 'Başka bir hâl seç' : fb.state === 'asking' ? 'Hangisi daha doğru? Seç, öğreneyim' : 'Tahminim yanlış mı? Hâlini seç'}
         </Text>
         {!(demo && !override) && <Text style={[styles.chevron, { color: theme.accent }]}>{chipsOpen ? '▴' : '▾'}</Text>}
       </Pressable>
@@ -224,6 +256,7 @@ export default function App() {
                       key={id}
                       onPress={() => {
                         setOverride(id);
+                        if (!demo) giveFeedback('choose', id); // seçim = eğitim
                         if (!demo) {
                           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                           setChipsExpanded(false);
@@ -281,6 +314,22 @@ export default function App() {
                   {result.strength[0].toLocaleUpperCase('tr-TR') + result.strength.slice(1)} tahmin · dinlediklerinin %{Math.round(result.share * 100)}'i bu hâli işaret ediyor
                 </Text>
               </View>
+            )}
+            {!demo && result && !override && fb.state === 'none' && (
+              <View style={styles.fbRow}>
+                <Text style={[styles.fbAsk, { color: theme.sub }]}>Doğru mu?</Text>
+                <PressableScale style={[styles.fbBtn, { borderColor: theme.cardBorder }]} onPress={() => giveFeedback('confirm')}>
+                  <Text style={[styles.fbText, { color: theme.text }]}>👍 Doğru</Text>
+                </PressableScale>
+                <PressableScale style={[styles.fbBtn, { borderColor: theme.cardBorder }]} onPress={() => giveFeedback('reject')}>
+                  <Text style={[styles.fbText, { color: theme.text }]}>👎 Yanlış</Text>
+                </PressableScale>
+              </View>
+            )}
+            {!demo && fb.state === 'thanks' && fb.note && (
+              <FadeIn>
+                <Text style={[styles.fbThanks, { color: theme.accent }]}>✓ {fb.note}</Text>
+              </FadeIn>
             )}
           </FadeIn>
         </View>
@@ -349,6 +398,29 @@ export default function App() {
                 <Text style={[styles.link, { color: theme.faint }]}>Çıkış yap</Text>
               </Pressable>
             </View>
+            {!!model?.events && (
+              <Pressable
+                style={styles.linkBtn}
+                onPress={() =>
+                  Alert.alert('Öğrendiklerimi sıfırla', `${model.events} geri bildirimden öğrendiklerim silinecek. Emin misin?`, [
+                    { text: 'Vazgeç', style: 'cancel' },
+                    {
+                      text: 'Sıfırla',
+                      style: 'destructive',
+                      onPress: async () => {
+                        setModel(await resetModel());
+                        setFb({ state: 'none' });
+                        load(true);
+                      },
+                    },
+                  ])
+                }
+              >
+                <Text style={[styles.link, { color: theme.faint, textAlign: 'center', fontSize: 12.5 }]}>
+                  🧠 {model.events} geri bildirimden öğrendim · sıfırla
+                </Text>
+              </Pressable>
+            )}
           </>
         )}
         {demo && (
@@ -436,6 +508,11 @@ const styles = StyleSheet.create({
   heroEmoji: { fontSize: 64 },
   heroLabel: { fontSize: 32, fontWeight: '800', textAlign: 'center', letterSpacing: 0.3 },
   heroSub: { marginTop: 6, textAlign: 'center', fontSize: 15, lineHeight: 21 },
+  fbRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14 },
+  fbAsk: { fontSize: 13, marginRight: 2 },
+  fbBtn: { borderWidth: 1, borderRadius: 18, paddingVertical: 7, paddingHorizontal: 14, backgroundColor: 'rgba(255,255,255,0.06)' },
+  fbText: { fontSize: 13, fontWeight: '600' },
+  fbThanks: { textAlign: 'center', marginTop: 14, fontSize: 13, fontWeight: '600' },
   confRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 5, marginTop: 14, paddingHorizontal: 10 },
   confDot: { width: 18, height: 5, borderRadius: 3 },
   confText: { fontSize: 12, marginLeft: 6, letterSpacing: 0.2 },
