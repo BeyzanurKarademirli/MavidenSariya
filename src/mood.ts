@@ -13,40 +13,40 @@ import { Track } from './spotify';
 // (ör. "=dağ" → "dağ" evet, "dağılıyorum" hayır; "=acı" → "acı" evet, "acımayacak" hayır).
 const KEYWORDS: Record<MoodId, string[]> = {
   // Zor anlar
-  huzun: ['ağla', 'gözyaş', 'hüzün', 'keder', 'dert', '=acı', 'acılar', '=acım', 'acısı', 'acıyor', '=yara', 'yaralı', 'yaram', 'yaralar', 'yarası', 'kırık', 'mahzun', '=gam', 'gamlı', 'sad', 'cry', 'tears', 'broken', 'hurt', 'pain', 'grief', '=blue', 'sorrow'],
+  huzun: ['ağla', 'üzgün', 'üzül', 'hıçkır', 'kahr', 'elem', 'perişan', 'sızı', 'sızla', 'yandım', 'buruk', 'soldu', 'derd', 'gözlerim doldu', 'gözyaş', 'hüzün', 'keder', 'dert', '=acı', 'acılar', '=acım', 'acısı', 'acıyor', '=yara', 'yaralı', 'yaram', 'yaralar', 'yarası', 'kırık', 'mahzun', '=gam', 'gamlı', 'sad', 'cry', 'tears', 'broken', 'hurt', 'pain', 'grief', '=blue', 'sorrow'],
   yas: ['ölüm', 'öldü', 'mezar', 'rahmetli', 'toprak', 'kaybettim', 'cenaze', 'ağıt', 'funeral', 'grave', 'rest in peace', '=rip', 'mourning', 'gone too soon', 'heaven knows'],
-  ayrilik: ['ayrılık', 'ayrıl', 'gitme', 'gittin', 'bitti', 'vazgeç', 'unut', 'eski sevgili', 'elveda', 'veda', 'breakup', 'break up', 'goodbye', 'let go', 'move on', 'heartbreak', 'it s over', 'we are never', 'without you'],
-  kaygi: ['endişe', 'kaygı', 'stres', 'panik', 'uykusuz', 'kaos', 'tedirgin', 'düşünce', 'anxiety', 'anxious', 'panic', 'pressure', 'stress', 'nervous', 'overthink', 'insomnia', 'chaos', 'help me'],
+  ayrilik: ['ayrılık', '=ayrı', 'gidersen', 'giderken', 'gidişin', 'son kez', 'hoşça kal', 'bıraktın', 'beni bırak', 'unuttun', 'ayrıl', 'gitme', 'gittin', 'bitti', 'vazgeç', 'unut', 'eski sevgili', 'elveda', 'veda', 'breakup', 'break up', 'goodbye', 'let go', 'move on', 'heartbreak', 'it s over', 'we are never', 'without you'],
+  kaygi: ['endişe', 'telaş', 'huzursuz', 'nefes alamı', 'boğuluyorum', 'sıkıştım', 'daraldım', 'bunaldım', 'kaygı', 'stres', 'panik', 'uykusuz', 'kaos', 'tedirgin', 'düşünce', 'anxiety', 'anxious', 'panic', 'pressure', 'stress', 'nervous', 'overthink', 'insomnia', 'chaos', 'help me'],
   korku: ['korku', 'kork', 'kabus', 'tehlike', 'karanlık', 'canavar', 'fear', 'scared', 'afraid', 'nightmare', 'monster', 'horror', 'ghost', 'dark', 'terror'],
-  ofke: ['öfke', 'nefret', 'intikam', 'kavga', 'sinir', 'yakarım', 'yıkarım', 'hınç', 'rage', 'angry', 'hate', 'revenge', 'kill', 'burn', 'scream', '=mad', 'enemy', '=war', 'fight'],
+  ofke: ['öfke', 'kızgın', 'sinirli', 'lanet', 'kahrol', 'defol', 'beddua', 'düşman', 'nefret', 'intikam', 'kavga', 'sinir', 'yakarım', 'yıkarım', 'hınç', 'rage', 'angry', 'hate', 'revenge', 'kill', 'burn', 'scream', '=mad', 'enemy', '=war', 'fight'],
   kirginlik: ['kırgın', 'küs', 'incit', 'vefasız', 'ihanet', 'yalan', 'kandır', 'aldat', 'nankör', 'betray', 'liar', 'lies', 'fake', 'hurt me', 'backstab', 'trust', 'used me', 'cheat'],
   kiskanclik: ['kıskan', 'haset', 'başkası', 'rakip', 'jealous', 'envy', 'envious', 'green eyed', 'someone else'],
-  umutsuzluk: ['çaresiz', 'umutsuz', 'dayanamı', 'boşver', 'çıkış yok', 'kurtar', 'batıyorum', 'hopeless', 'helpless', 'give up', 'no way out', 'drowning', 'falling apart', 'sinking', 'can t go on', 'save me'],
+  umutsuzluk: ['çaresiz', 'çare yok', 'mahvol', 'bitik', 'dibe', 'son nefes', 'umutsuz', 'dayanamı', 'boşver', 'çıkış yok', 'kurtar', 'batıyorum', 'hopeless', 'helpless', 'give up', 'no way out', 'drowning', 'falling apart', 'sinking', 'can t go on', 'save me'],
   yalnizlik: ['yalnız', 'tek başına', 'kimse', 'kimsesiz', 'sessiz', 'boşluk', 'ıssız', 'terk', 'gece', '=ay', 'aya', 'ayın', 'lonely', 'alone', 'nobody', 'no one', 'empty', 'solitude', 'isolation', 'by myself', 'night', 'moon'],
-  yorgunluk: ['yorgun', 'yoruldum', 'bitkin', 'uyku', 'tüken', 'ağır', 'bıktım', 'yeter', 'dinlen', 'tired', 'exhausted', 'sleep', 'numb', 'heavy', 'drained', 'burnout', 'weary'],
+  yorgunluk: ['yorgun', 'usandım', 'takatim', 'dermanım', 'halim yok', 'yoruldum', 'bitkin', 'uyku', 'tüken', 'ağır', 'bıktım', 'yeter', 'dinlen', 'tired', 'exhausted', 'sleep', 'numb', 'heavy', 'drained', 'burnout', 'weary'],
   pismanlik: ['pişman', 'özür', 'affet', 'hata', 'keşke', 'günah', 'geri al', 'suç', 'vicdan', 'tövbe', 'sorry', 'regret', 'forgive', 'mistake', 'apolog', 'wish i', 'guilty', 'my fault', 'take it back'],
   isyan: ['isyan', 'başkaldır', 'kural', 'sistem', 'direniş', 'özgürlük', 'sokak', 'adalet', 'zulüm', 'rebel', 'riot', 'revolution', 'system', 'freedom', 'against', 'rules', 'outlaw', 'street', 'justice', 'resist'],
   // Gönül
   ozlem: ['özle', 'hasret', 'sıla', 'gurbet', 'uzak', 'hatıra', 'sensiz', '=dön', 'dönsen', 'dönmez', 'geri dön', 'dönüş', 'beni unutma', '=eski', 'eskiden', 'memleket', 'çocukluk', '=miss', 'missing', 'missed', 'far away', 'memories', 'remember', 'home', 'come back', 'nostalgia', 'used to', 'old days'],
-  ask: ['aşk', 'güzel', 'sev', 'sevgili', 'kalbim', 'yarim', 'yare', 'canım', 'gönül', 'öpe', 'öpüş', 'öpücük', 'öptüm', 'gözlerin', 'birtanem', 'love', 'lover', 'kiss', 'darling', 'romance', 'baby', 'my heart', 'crush', 'valentine'],
+  ask: ['aşk', 'aşık', 'aşığım', 'sevda', 'seviyorum', 'sevdim', 'sevdiğim', 'sevgilim', 'yâr', 'cananım', 'dilber', 'gönlüm', 'gönlümü', 'kalbimi', 'sevgi', 'güzel', 'sev', 'sevgili', 'kalbim', 'yarim', 'yare', 'canım', 'gönül', 'öpe', 'öpüş', 'öpücük', 'öptüm', 'gözlerin', 'birtanem', 'love', 'lover', 'kiss', 'darling', 'romance', 'baby', 'my heart', 'crush', 'valentine'],
   sefkat: ['şefkat', 'merhamet', 'bebek', 'ninni', 'kucak', 'yavrum', 'sarıl', 'koru', 'tender', 'hold me', 'hug', 'lullaby', 'gentle', '=care', 'caring', 'little one', 'angel', 'protect'],
   dostluk: ['dost', 'arkadaş', 'kardeş', 'birlikte', 'beraber', 'kanka', 'yoldaş', 'el ele', 'omuz', 'friend', 'together', 'brother', 'sister', 'buddy', 'homie', 'crew', 'count on me', 'stand by me'],
   aile: ['anne', 'annem', 'baba', 'babam', 'aile', 'evlat', 'kızım', 'oğlum', 'yuva', '=ev', 'evim', 'evimiz', 'evine', 'mother', 'mama', '=mom', 'mommy', 'father', '=dad', 'daddy', 'papa', 'family', 'daughter', 'home sweet'],
   // Canlılık
-  nese: ['dans', 'oyna', 'eğlen', '=gül', 'gülüm', 'güller', 'gülüş', 'gülümse', 'güldü', 'gülmek', 'mutlu', 'neşe', 'parti', '=şen', 'şenlik', 'güneş', '=yaz', 'yazın', 'happy', '=fun', 'funny', 'smile', 'party', 'good vibes', 'joy', 'laugh', 'sunshine', 'summer', 'dance', 'groove'],
+  nese: ['dans', 'kahkaha', 'neşeli', 'eğlence', 'bayram', 'düğün', 'halay', 'zıpla', 'oyna', 'eğlen', '=gül', 'gülüm', 'güller', 'gülüş', 'gülümse', 'güldü', 'gülmek', 'mutlu', 'neşe', 'parti', '=şen', 'şenlik', 'güneş', '=yaz', 'yazın', 'happy', '=fun', 'funny', 'smile', 'party', 'good vibes', 'joy', 'laugh', 'sunshine', 'summer', 'dance', 'groove'],
   cosku: ['enerji', 'koş', 'hız', 'hadi', 'haydi', 'ateş', 'çılgın', 'coş', 'energy', '=run', 'running', 'fast', 'jump', 'pump', 'alive', 'wild', 'turn up', 'unstoppable', 'go go', 'adrenaline'],
   guc: ['güç', 'kral', 'kraliçe', 'zafer', 'şampiyon', 'kazan', 'yenilmez', '=para', 'paralar', 'paran', 'param', 'zengin', 'power', 'king', 'queen', 'champion', 'winner', 'winning', 'victory', 'boss', 'legend', 'money', 'rich', 'hero', 'strong'],
-  sukur: ['şükür', 'şükret', 'teşekkür', 'nimet', 'hamd', 'minnet', 'grateful', 'thankful', 'thank', 'blessed', 'gratitude', 'bless'],
-  umut: ['umut', 'ümit', 'yarın', 'yeni', 'başla', 'şafak', 'ışık', 'kanat', 'uçmak', 'yüksel', 'hope', 'tomorrow', 'rise', 'new day', 'light', 'wings', 'fly', 'begin', 'dawn', 'brave', 'stronger', 'better days'],
+  sukur: ['şükür', 'elhamdülillah', 'hamdolsun', 'şükürler', 'çok şükür', 'şükret', 'teşekkür', 'nimet', 'hamd', 'minnet', 'grateful', 'thankful', 'thank', 'blessed', 'gratitude', 'bless'],
+  umut: ['umut', 'umud', 'ümid', 'umarım', 'inşallah', 'ümit', 'yarın', 'yeni', 'başla', 'şafak', 'ışık', 'kanat', 'uçmak', 'yüksel', 'hope', 'tomorrow', 'rise', 'new day', 'light', 'wings', 'fly', 'begin', 'dawn', 'brave', 'stronger', 'better days'],
   // Derinlik ve dinginlik
   huzur: ['huzur', 'sakin', 'deniz', 'rüzgar', 'yağmur', 'sabah', 'sükût', 'bahar', 'dingin', 'sessizce', 'calm', 'peace', 'quiet', 'ocean', 'rain', 'breathe', 'morning', 'slow', 'serene'],
   hayranlik: ['muhteşem', 'harika', 'mucize', 'gökyüzü', 'yıldız', '=dağ', 'dağlar', 'dağın', 'dağları', 'evren', 'beautiful', 'wonder', 'amazing', 'miracle', 'sky', 'stars', 'paradise', 'galaxy', 'universe', 'majestic'],
   hayal: ['hayal', 'rüya', '=düş', 'düşler', 'düşlerim', 'düşlerde', 'bulut', 'masal', 'dalgın', 'dream', 'daydream', 'fantasy', 'cloud', 'imagine', 'fairy', 'wish', 'wonderland', 'floating'],
-  varolus: ['neden', 'niçin', 'hayat', 'zaman', 'sonsuz', 'anlam', 'var ol', 'yok ol', 'kimim', 'fani', 'dünya', 'why', 'life', 'time', 'meaning', 'exist', 'who am i', 'void', 'eternal', 'mortal', 'infinity'],
+  varolus: ['neden', 'kader', 'alın yazı', 'yazgı', 'ömür', 'ömr', 'ölümlü', 'fanidir', 'sonsuzluk', 'niçin', 'hayat', 'zaman', 'sonsuz', 'anlam', 'var ol', 'yok ol', 'kimim', 'fani', 'dünya', 'why', 'life', 'time', 'meaning', 'exist', 'who am i', 'void', 'eternal', 'mortal', 'infinity'],
   sezgi: ['hisset', 'hisler', 'sezgi', 'iç ses', 'ruh', 'kalp', 'sırr', 'sırlar', 'ilham', 'ayna', 'bilinç', 'intuition', 'soul', 'spirit', 'inner', 'vision', 'third eye', 'mirror'],
   arayis: ['arıyor', 'arayış', 'ararım', '=yol', 'yollar', 'yolun', 'yolum', 'kayboldum', 'nereye', 'yön', 'pusula', 'search', 'seeking', 'find', 'path', 'road', 'lost', 'wander', 'journey', 'where', 'direction', 'compass'],
   kararsizlik: ['kararsız', 'bilmiyorum', 'belki', 'acaba', 'ikilem', 'arada kaldım', 'seçim', 'maybe', 'perhaps', 'decide', 'choice', 'confused', 'don t know', 'torn', 'crossroads', 'should i', 'in between'],
-  sevk: ['ilahi', 'zikir', 'dua', 'secde', 'allah', '=hu', 'sufi', 'semah', 'mevla', 'ya rab', 'rabbim', 'aşkın', 'hallelujah', 'praise', 'pray', 'divine', 'worship', 'holy', 'glory'],
+  sevk: ['ilahi', 'ya rabbi', 'ya allah', 'mevlam', 'yaradan', 'yaratan', 'rabbena', 'ezan', 'namaz', 'tesbih', 'aşk ı ilahi', 'sübhan', 'salavat', 'resul', 'muhammed', 'nebi', 'peygamber', 'mahşer', 'subhanallah', 'allahu', 'la ilahe', 'illallah', 'zikir', 'dua', 'secde', 'allah', '=hu', 'sufi', 'semah', 'mevla', 'ya rab', 'rabbim', 'aşkın', 'hallelujah', 'praise', 'pray', 'divine', 'worship', 'holy', 'glory'],
 };
 
 const GENRES: Record<MoodId, string[]> = {
@@ -85,7 +85,10 @@ const GENRES: Record<MoodId, string[]> = {
 
 export type MoodResult = {
   mood: MoodId;
-  confidence: number; // 0..1
+  confidence: number; // 0..1 (paya, ikinciden farka ve kanıt miktarına göre)
+  share: number; // 0..1: dinlediklerinin ne kadarı bu hâli işaret ediyor
+  strength: 'güçlü' | 'orta' | 'zayıf';
+  uncertain: boolean; // zayıfsa kullanıcıya hâlini seçmesi önerilir
   scores: Record<MoodId, number>;
   evidence: string[]; // kullanıcıya gösterilecek ipuçları
 };
@@ -119,7 +122,7 @@ const WEAK = new Set([
   'hadi', 'güneş', 'sabah', 'morning', 'deniz', 'rüzgar', 'yağmur', 'rain', 'dua', 'allah', 'rabbim', 'belki', 'maybe',
   'bilmiyorum', 'don t know', 'başla', 'begin', 'uçmak', 'fly', 'rise', 'hisset', 'hisler', 'kalp', 'run', '=run', 'running',
 ]);
-const LYRIC_WEIGHT = 0.6; // sözlerde geçen her FARKLI kelime (nakarat tekrarı bir kez sayılır)
+const LYRIC_WEIGHT = 0.6; // sözlerde geçen her farklı kelime (tekrarı sınırlı ek puan alır)
 const LYRIC_CAP = 5; // bir şarkının sözleri bir hâle en fazla bu kadar farklı kelimeyle katkı verir
 
 const RECENT_HOURS = 3; // yalnızca son 3 saatte dinlenenler (en az MIN_TRACKS, en çok MAX_TRACKS şarkı)
@@ -135,72 +138,100 @@ export function recentTracks(all: Track[], now = new Date()): Track[] {
 
 export function detectMood(allTracks: Track[], now = new Date()): MoodResult {
   const tracks = recentTracks(allTracks, now);
-  const scores = empty();
-  // Her şarkı için: hangi hâle ne kadar katkı verdi ve hangi kelimelerle
-  const perTrack: { name: string; now: boolean; moods: Partial<Record<MoodId, { score: number; words: string[] }>> }[] = [];
   const moods = Object.keys(KEYWORDS) as MoodId[];
+  const scores = empty();
+  let totalVotes = 0;
+  const evidence: string[] = [];
 
+  // Her şarkı bir "oy" verir: önce şarkının kendi içinde hangi hâli ne oranda işaret ettiği bulunur
+  // (uzun sözlü şarkı tek başına baskın çıkmasın diye oranlanır), sonra yakınlığına göre ağırlıklandırılır.
   tracks.forEach((t, i) => {
-    // Son dinlenen şarkılar daha ağır basar
-    const w = t.playedAt ? Math.pow(0.82, i) : NOW_PLAYING_WEIGHT; // şu an çalan en etkili; 5. şarkı ~0.45
+    const recency = t.playedAt ? Math.pow(0.8, i) : NOW_PLAYING_WEIGHT;
     const title = normalize(t.name);
     const lyrics = t.lyrics ? normalize(t.lyrics) : '';
     const genreText = normalize(t.genres.join(' | '));
-    const row: (typeof perTrack)[number] = { name: t.name, now: !t.playedAt, moods: {} };
-    perTrack.push(row);
-    const note = (mood: MoodId, score: number, words: string[]) => {
-      const cur = (row.moods[mood] ??= { score: 0, words: [] });
-      cur.score += score;
-      words.forEach((wd) => !cur.words.includes(wd) && cur.words.push(wd));
+    const artist = normalize(t.artists.join(' | '));
+
+    const raw = empty();
+    const words: Partial<Record<MoodId, string[]>> = {};
+    const add = (mood: MoodId, v: number, w?: string) => {
+      raw[mood] += v;
+      if (w && !(words[mood] ??= []).includes(w)) words[mood]!.push(w);
     };
 
     for (const mood of moods) {
       const titleKw = KEYWORDS[mood].find((kw) => hit(title, kw));
-      if (titleKw) {
-        const tw = (WEAK.has(titleKw) ? WEAK_TITLE_WEIGHT : TITLE_WEIGHT) * w;
-        scores[mood] += tw;
-        note(mood, tw, [label(titleKw)]);
-      }
+      if (titleKw) add(mood, WEAK.has(titleKw) ? WEAK_TITLE_WEIGHT : TITLE_WEIGHT, label(titleKw));
       if (lyrics) {
-        const found = KEYWORDS[mood].filter((kw) => !WEAK.has(kw) && hit(lyrics, kw)).slice(0, LYRIC_CAP);
-        if (found.length) {
-          const add = found.length * LYRIC_WEIGHT * w;
-          scores[mood] += add;
-          note(mood, add, found.map(label));
+        let distinct = 0;
+        for (const kw of KEYWORDS[mood]) {
+          if (WEAK.has(kw) || distinct >= LYRIC_CAP) continue;
+          const c = count(lyrics, kw);
+          if (!c) continue;
+          distinct++;
+          // Tekrar (nakarat) önemlidir ama sınırlı: 1 kez → 0.6, 2 → 0.9, 4+ → 1.2
+          add(mood, LYRIC_WEIGHT * (1 + Math.log2(Math.min(c, 4)) * 0.5), label(kw));
         }
       }
-      if (GENRES[mood].some((g) => genreText.includes(normalize(g).trim()))) scores[mood] += 1 * w;
+      if (GENRES[mood].some((g) => genreText.includes(normalize(g).trim()))) add(mood, 0.8);
     }
+    for (const [name, mood] of ARTISTS) if (artist.includes(name)) add(mood, 1.5);
+
+    const songTotal = Object.values(raw).reduce((a, b) => a + b, 0);
+    const ranked = moods.filter((m) => raw[m] > 0).sort((a, b) => raw[b] - raw[a]);
+    evidence.push(
+      `"${t.name}"${t.playedAt ? '' : ' · şimdi'} → ` +
+        (ranked.length
+          ? ranked.slice(0, 2).map((m) => `${MOOD_LABELS[m]}${words[m]?.length ? ` (${words[m]!.slice(0, 3).join(', ')})` : ''}`).join(' · ')
+          : 'belirgin bir ipucu yok'),
+    );
+    if (!songTotal) return;
+
+    // Kanıtı az olan şarkının oyu da azdır (ör. tek bir kelime)
+    const strength = Math.min(1, songTotal / 4); // yalnızca ad eşleşmesi (2 puan) yarım oy sayılır
+    const vote = recency * strength;
+    totalVotes += vote;
+    for (const m of ranked) scores[m] += (vote * raw[m]) / songTotal;
   });
 
-  // Her şarkı bir satır: en yeniden eskiye; o şarkının en güçlü 2 hâli ve bulunan kelimeler
-  const evidence = perTrack.map((r) => {
-    const top = (Object.entries(r.moods) as [MoodId, { score: number; words: string[] }][])
-      .sort((x, y) => y[1].score - x[1].score)
-      .slice(0, 2)
-      .map(([mood, v]) => `${MOOD_LABELS[mood]} (${v.words.slice(0, 3).join(', ')})`);
-    return `"${r.name}"${r.now ? ' · şimdi' : ''} → ${top.length ? top.join(' · ') : 'belirgin bir ipucu yok'}`;
-  });
   const withLyrics = tracks.filter((t) => t.lyrics).length;
   if (tracks.length) evidence.push(`Son ${tracks.length} şarkına bakıldı (en yenisi en etkili); ${withLyrics} tanesinin sözleri bulundu`);
 
   // Gece geç saatte dinleme: yalnızlık / özlem / varoluş yönüne hafif kaydır
   const hour = now.getHours();
-  if (hour >= 0 && hour < 5) {
-    scores.yalnizlik += 0.7;
-    scores.ozlem += 0.5;
-    scores.varolus += 0.5;
-    scores.sevk += 0.3;
+  if (hour >= 0 && hour < 5 && totalVotes > 0) {
+    scores.yalnizlik += 0.15 * totalVotes;
+    scores.ozlem += 0.1 * totalVotes;
+    scores.varolus += 0.1 * totalVotes;
     evidence.push('Gece geç saatte dinliyorsun');
   }
 
-  const entries = Object.entries(scores) as [MoodId, number][];
-  entries.sort((x, y) => y[1] - x[1]);
-  const total = entries.reduce((s, [, v]) => s + v, 0);
-  const [topMood, topScore] = entries[0];
-
-  if (total === 0) {
-    return { mood: 'huzur', confidence: 0, scores, evidence: ['Belirgin bir ipucu bulunamadı', ...evidence] };
+  const entries = (Object.entries(scores) as [MoodId, number][]).sort((x, y) => y[1] - x[1]);
+  const sum = entries.reduce((s, [, v]) => s + v, 0);
+  if (!sum) {
+    return { mood: 'huzur', confidence: 0, share: 0, strength: 'zayıf', uncertain: true, scores, evidence: ['Belirgin bir ipucu bulunamadı', ...evidence] };
   }
-  return { mood: topMood, confidence: Math.min(1, topScore / total), scores, evidence };
+  const [topMood, topScore] = entries[0];
+  const second = entries[1]?.[1] ?? 0;
+  // share: dinlediklerinin ne kadarı bu hâli işaret ediyor; lead: ikinci hâlden ne kadar önde
+  const share = topScore / sum;
+  const lead = (topScore - second) / topScore;
+  const coverage = Math.min(1, totalVotes / 4); // yeterince şarkıdan kanıt var mı
+  const confidence = Math.min(1, (0.6 * share + 0.4 * lead) * (0.4 + 0.6 * coverage) * 1.3);
+  const strength: MoodResult['strength'] = confidence >= 0.6 ? 'güçlü' : confidence >= 0.35 ? 'orta' : 'zayıf';
+  return { mood: topMood, confidence, share, strength, uncertain: strength === 'zayıf', scores, evidence };
 }
+
+/** Sözlerde bir anahtar kelimenin kaç kez geçtiği */
+function count(text: string, kw: string) {
+  const needle = kw.startsWith('=') ? ' ' + kw.slice(1) + ' ' : ' ' + kw;
+  let n = 0;
+  for (let i = text.indexOf(needle); i !== -1 && n < 8; i = text.indexOf(needle, i + needle.length)) n++;
+  return n;
+}
+
+// Bilinen ilahi/nasheed sanatçıları (sözleri Arapça/İngilizce olsa da manevi coşku)
+const ARTISTS: [string, MoodId][] = [
+  ['sami yusuf', 'sevk'], ['maher zain', 'sevk'], ['harris j', 'sevk'], ['mesut kurtis', 'sevk'],
+  ['raef', 'sevk'], ['humood', 'sevk'], ['mishary', 'sevk'], ['ahmed bukhatir', 'sevk'], ['omar esa', 'sevk'],
+];

@@ -195,7 +195,7 @@ export default function App() {
   }
 
   // ───────── Ana ekran ─────────
-  const chipsOpen = (demo && !override) || chipsExpanded;
+  const chipsOpen = (demo && !override) || chipsExpanded || (!demo && !override && !!result?.uncertain);
   const toggleChips = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setChipsExpanded((x) => !x);
@@ -264,16 +264,23 @@ export default function App() {
             <Text style={[styles.heroLabel, { color: theme.text }]}>{demo && !override ? 'Bugün nasılsın?' : m.label}</Text>
             {!demo && result && (
               <Text style={[styles.heroSub, { color: theme.sub }]}>
-                {override ? 'Kendi seçtiğin hâl' : m.description}
+                {override
+                  ? 'Kendi seçtiğin hâl'
+                  : result.uncertain
+                    ? 'Dinlediklerinden emin olamadım; en yakın tahminim bu. Aşağıdan hâlini seçebilirsin.'
+                    : m.description}
               </Text>
             )}
             {!demo && result && !override && (
-              <View style={[styles.confBar, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
-                <View style={[styles.confFill, { width: `${Math.max(8, Math.round(result.confidence * 100))}%`, backgroundColor: theme.accent }]} />
+              <View style={styles.confRow}>
+                {(['zayıf', 'orta', 'güçlü'] as const).map((lvl, i) => {
+                  const on = i <= ['zayıf', 'orta', 'güçlü'].indexOf(result.strength);
+                  return <View key={lvl} style={[styles.confDot, { backgroundColor: on ? theme.accent : 'rgba(255,255,255,0.14)' }]} />;
+                })}
+                <Text style={[styles.confText, { color: theme.faint }]}>
+                  {result.strength[0].toLocaleUpperCase('tr-TR') + result.strength.slice(1)} tahmin · dinlediklerinin %{Math.round(result.share * 100)}'i bu hâli işaret ediyor
+                </Text>
               </View>
-            )}
-            {!demo && result && !override && (
-              <Text style={[styles.confText, { color: theme.faint }]}>tahmin güveni %{Math.round(result.confidence * 100)}</Text>
             )}
           </FadeIn>
         </View>
@@ -429,9 +436,9 @@ const styles = StyleSheet.create({
   heroEmoji: { fontSize: 64 },
   heroLabel: { fontSize: 32, fontWeight: '800', textAlign: 'center', letterSpacing: 0.3 },
   heroSub: { marginTop: 6, textAlign: 'center', fontSize: 15, lineHeight: 21 },
-  confBar: { height: 4, borderRadius: 2, marginTop: 14, width: 160, alignSelf: 'center', overflow: 'hidden' },
-  confFill: { height: 4, borderRadius: 2 },
-  confText: { textAlign: 'center', fontSize: 11, marginTop: 5, letterSpacing: 0.5 },
+  confRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 5, marginTop: 14, paddingHorizontal: 10 },
+  confDot: { width: 18, height: 5, borderRadius: 3 },
+  confText: { fontSize: 12, marginLeft: 6, letterSpacing: 0.2 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingRight: 20 },
   section: { fontSize: 16, fontWeight: '700', marginBottom: 6, marginHorizontal: 20 },
   chevron: { fontSize: 18, fontWeight: '700' },
