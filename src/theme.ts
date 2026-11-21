@@ -50,6 +50,13 @@ export function themeFor(mood: MoodId): Theme {
   };
 }
 
+/** Birden fazla hâl: degrade ilk hâlin renginden ikincisine, oradan gece mavisine geçer. */
+export function themeForMany(moods: MoodId[]): Theme {
+  const t = themeFor(moods[0]);
+  const c2 = MOODS[moods[1]].color;
+  return { ...t, gradient: [t.gradient[0], mix(c2, BASE, 0.55), BASE] };
+}
+
 // Giriş ekranı: uygulama simgesindeki gibi maviden sarıya şafak
 export const DAWN: [string, string, string, string] = ['#0E1F4D', '#2B57A6', '#8E6FB3', '#F0A548'];
 

@@ -7,9 +7,9 @@ import { exchangeCodeAsync, makeRedirectUri, ResponseType, useAuthRequest } from
 
 import { GROUPS, Item, MoodId, MOODS } from './src/content';
 import { attachLyrics } from './src/lyrics';
-import { nextPage, Page } from './src/rotation';
+import { MultiPage, nextPageMulti } from './src/rotation';
 import { resolveAyah } from './src/ayat';
-import { alpha, DAWN, PARTICLES, Theme, themeFor } from './src/theme';
+import { alpha, DAWN, PARTICLES, Theme, themeFor, themeForMany } from './src/theme';
 import { FadeIn, Float, Glow, MoodBackground, Particles, PressableScale } from './src/ui';
 import { detectMood, MoodResult } from './src/mood';
 import { learn, loadModel, Model, resetModel } from './src/learning';
@@ -35,8 +35,11 @@ export default function App() {
   const [error, setError] = useState('');
   const [tracks, setTracks] = useState<Track[]>([]);
   const [result, setResult] = useState<MoodResult | null>(null);
-  const [override, setOverride] = useState<MoodId | null>(null);
-  const [page, setPage] = useState<Page | null>(null);
+  // Kullanıcının seçtiği hâller (en fazla 3). null = uygulamanın tahmini gösterilir.
+  // Seçim yalnızca o şarkı için geçerlidir: çalan şarkı değişince bırakılır ve yeniden tahmin yapılır.
+  const [override, setOverride] = useState<MoodId[] | null>(null);
+  const overrideTrack = useRef<string | null>(null);
+  const [page, setPage] = useState<MultiPage | null>(null);
   const [pageNo, setPageNo] = useState(0);
   const [loadingText, setLoadingText] = useState('Dinlediklerine bakıyorum…');
   const [demo, setDemo] = useState(false);
@@ -71,8 +74,11 @@ export default function App() {
       const mdl = await loadModel();
       setModel(mdl);
       setTracks(withLyrics);
-      setResult(detectMood(withLyrics, new Date(), mdl));
-      if (!silent) setOverride(null);
+      const r = detectMood(withLyrics, new Date(), mdl);
+      setResult(r);
+      // Elle yapılan seçim, seçildiği andaki şarkı çalmaya devam ettiği sürece kalır
+      const current = r.analyzed[0]?.id ?? null;
+      if (!silent || current !== overrideTrack.current) setOverride(null);
       setPhase('ready');
     } catch (e: any) {
       if (e?.message === 'UNAUTHORIZED') {
@@ -129,47 +135,75 @@ export default function App() {
   }, [response, request, load]);
 
   // Yeni bir tahmin gelince geri bildirim sorusu yeniden sorulur
-  const predicted = result?.mood;
+  const predictedKey = result?.moods.join();
   useEffect(() => {
     setFb({ state: 'none' });
-  }, [predicted]);
+  }, [predictedKey]);
+
+  const labels = (ids: MoodId[]) => ids.map((id) => MOODS[id].label).join(' + ');
 
   /** 👍 / 👎 / hâl seçimi → kişisel modeli eğit */
   const giveFeedback = useCallback(
-    async (kind: 'confirm' | 'reject' | 'choose', chosen?: MoodId) => {
+    async (kind: 'confirm' | 'reject' | 'choose', chosen?: MoodId[]) => {
       if (!result) return;
-      const p = result.mood;
+      const p = result.moods;
       if (kind === 'confirm') {
         setModel(await learn({ kind: 'confirm', predicted: p }, result.analyzed, result.trackWords));
-        setFb({ state: 'thanks', note: `Teşekkürler! Bu şarkıları ${MOODS[p].label} ile eşleştirdim.` });
+        setFb({ state: 'thanks', note: `Teşekkürler! Bu şarkıları ${labels(p)} ile eşleştirdim.` });
       } else if (kind === 'reject') {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setFb({ state: 'asking' });
-      } else if (chosen) {
-        const f = chosen === p ? { kind: 'confirm' as const, predicted: p } : { kind: 'correct' as const, predicted: p, chosen };
+      } else if (chosen?.length) {
+        const same = chosen.length === p.length && chosen.every((x) => p.includes(x));
+        const f = same ? { kind: 'confirm' as const, predicted: p } : { kind: 'correct' as const, predicted: p, chosen };
         setModel(await learn(f, result.analyzed, result.trackWords));
-        setFb({ state: 'thanks', note: `Öğrendim: bu şarkılar sana ${MOODS[chosen].label} hissettiriyor.` });
+        setFb({ state: 'thanks', note: `Öğrendim: bu şarkılar sana ${labels(chosen)} hissettiriyor.` });
       }
     },
     [result],
   );
 
-  const mood: MoodId = override ?? result?.mood ?? 'huzur';
+  const active: MoodId[] = override ?? result?.moods ?? ['huzur'];
+  const activeKey = active.join();
+  const mood: MoodId = active[0]; // ana hâl (tema, parçacıklar)
   const showContent = (phase === 'ready' && !demo) || (demo && !!override);
 
-  // Hâl değişince ya da uygulama açılınca sıradaki ayet/hadisleri getir (gösterilenler arkaya geçer)
+  // Hâl(ler) değişince ya da uygulama açılınca sıradaki ayet/hadisleri getir (gösterilenler arkaya geçer)
   const showNext = useCallback(() => {
-    nextPage(mood).then((p) => {
+    nextPageMulti(activeKey.split(',') as MoodId[]).then((p) => {
       setPage(p);
       setPageNo((n) => n + 1);
     });
-  }, [mood]);
+  }, [activeKey]);
   useEffect(() => {
     if (showContent) showNext();
   }, [showContent, showNext]);
 
+  // Elle seçim eğitim olarak öğrenilir; birkaç hâl seçilebildiği için seçim bitince (kısa bir bekleme sonra) öğrenilir
+  useEffect(() => {
+    if (demo || !override?.length) return;
+    const t = setTimeout(() => giveFeedback('choose', override), 1800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [override?.join()]);
+
+  /** Hâl düğmesine dokununca: seçime ekle / çıkar (en fazla 3) */
+  const toggleMood = (id: MoodId) => {
+    if (!demo) overrideTrack.current = result?.analyzed[0]?.id ?? null;
+    setChipsExpanded(true); // birden fazla hâl seçilebilsin diye liste açık kalsın
+    setOverride((cur) => {
+      if (!cur) return [id];
+      if (cur.includes(id)) {
+        const next = cur.filter((x) => x !== id);
+        return next.length ? next : null;
+      }
+      return cur.length < 3 ? [...cur, id] : [...cur.slice(0, 2), id];
+    });
+  };
+
   const m = MOODS[mood];
-  const theme = themeFor(mood);
+  const multi = active.length > 1;
+  const theme = multi ? themeForMany(active) : themeFor(mood);
 
   // ───────── Yükleniyor ─────────
   if (phase === 'checking' || phase === 'loading') {
@@ -241,6 +275,11 @@ export default function App() {
         </Text>
         {!(demo && !override) && <Text style={[styles.chevron, { color: theme.accent }]}>{chipsOpen ? '▴' : '▾'}</Text>}
       </Pressable>
+      {chipsOpen && (
+        <Text style={[styles.hint, { color: theme.faint }]}>
+          Birden fazla duygu varsa 3 hâle kadar seçebilirsin.{!demo ? ' Seçimin bu şarkı için geçerli; şarkı değişince yeniden tahmin ederim.' : ''}
+        </Text>
+      )}
       {chipsOpen &&
         GROUPS.map((g) => (
           <View key={g.id}>
@@ -249,19 +288,12 @@ export default function App() {
               {(Object.keys(MOODS) as MoodId[])
                 .filter((id) => MOODS[id].group === g.id)
                 .map((id) => {
-                  const active = mood === id && (!demo || !!override);
+                  const active = override ? override.includes(id) : !demo && !!result && result.moods.includes(id);
                   const c = themeFor(id);
                   return (
                     <PressableScale
                       key={id}
-                      onPress={() => {
-                        setOverride(id);
-                        if (!demo) giveFeedback('choose', id); // seçim = eğitim
-                        if (!demo) {
-                          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                          setChipsExpanded(false);
-                        }
-                      }}
+                      onPress={() => toggleMood(id)}
                       style={[
                         styles.chip,
                         { borderColor: active ? c.accent : 'rgba(255,255,255,0.14)', backgroundColor: active ? alpha(MOODS[id].color, 0.55) : 'rgba(255,255,255,0.05)' },
@@ -290,18 +322,22 @@ export default function App() {
           <View style={[styles.center, { height: 130 }]}>
             <Glow color={theme.accent} size={140} />
             <Float>
-              <Text style={styles.heroEmoji}>{demo && !override ? '🌙' : m.emoji}</Text>
+              <Text style={[styles.heroEmoji, multi && { fontSize: 46, letterSpacing: 6 }]}>{demo && !override ? '🌙' : active.map((id) => MOODS[id].emoji).join(' ')}</Text>
             </Float>
           </View>
-          <FadeIn key={`label-${mood}-${!!override}`}>
-            <Text style={[styles.heroLabel, { color: theme.text }]}>{demo && !override ? 'Bugün nasılsın?' : m.label}</Text>
+          <FadeIn key={`label-${activeKey}-${!!override}`}>
+            <Text style={[styles.heroLabel, multi && { fontSize: 26 }, { color: theme.text }]}>
+              {demo && !override ? 'Bugün nasılsın?' : active.map((id) => MOODS[id].label).join(' · ')}
+            </Text>
             {!demo && result && (
               <Text style={[styles.heroSub, { color: theme.sub }]}>
                 {override
-                  ? 'Kendi seçtiğin hâl'
+                  ? override.length > 1 ? 'Kendi seçtiğin hâller' : 'Kendi seçtiğin hâl'
                   : result.uncertain
                     ? 'Dinlediklerinden emin olamadım; en yakın tahminim bu. Aşağıdan hâlini seçebilirsin.'
-                    : m.description}
+                    : multi
+                      ? 'Dinlediklerinde birden fazla duygu bir arada.'
+                      : m.description}
               </Text>
             )}
             {!demo && result && !override && (
@@ -339,19 +375,23 @@ export default function App() {
         {/* Ayet ve hadis kartları: her sayfada sırayla belirir */}
         {showContent &&
           page?.items.map((it, i) => (
-            <FadeIn key={`${mood}-${pageNo}-${i}`} delay={120 + i * 140}>
-              <ItemCard item={it} theme={theme} />
+            <FadeIn key={`${activeKey}-${pageNo}-${i}`} delay={120 + i * 140}>
+              <ItemCard item={it.item} theme={multi ? themeFor(it.mood) : theme} tag={multi ? MOODS[it.mood].label : undefined} />
             </FadeIn>
           ))}
 
         {showContent && (
-          <FadeIn key={`btn-${mood}-${pageNo}`} delay={500} style={{ alignItems: 'center' }}>
+          <FadeIn key={`btn-${activeKey}-${pageNo}`} delay={500} style={{ alignItems: 'center' }}>
             <PressableScale style={[styles.btn, { backgroundColor: theme.accentSolid }]} onPress={showNext}>
               <Text style={styles.btnText}>Sıradaki ayet ve hadis  ›</Text>
             </PressableScale>
             {page && (
               <Text style={[styles.progress, { color: theme.faint }]}>
-                {page.totalAyat} ayetin {page.seenAyat}.'sindesin · {page.totalHadis} hadisin {page.seenHadis}.'sindesin · hepsi bitince baştan başlar
+                {active
+                  .filter((id) => page.pages[id])
+                  .map((id) => `${multi ? MOODS[id].label + ': ' : ''}${page.pages[id].totalAyat} ayetin ${page.pages[id].seenAyat}.'si`)
+                  .join(' · ')}
+                {' · hepsi bitince baştan başlar'}
               </Text>
             )}
           </FadeIn>
@@ -467,13 +507,13 @@ function NowPlaying({ color }: { color: string }) {
   );
 }
 
-function ItemCard({ item, theme }: { item: Item; theme: Theme }) {
+function ItemCard({ item, theme, tag }: { item: Item; theme: Theme; tag?: string }) {
   const box = [styles.card, { backgroundColor: theme.card, borderColor: theme.cardBorder }];
   if (item.kind === 'ayet') {
     const r = resolveAyah(item);
     return (
       <View style={box}>
-        <Text style={[styles.cardKind, { color: theme.accent }]}>✦ AYET</Text>
+        <Text style={[styles.cardKind, { color: theme.accent }]}>✦ AYET{tag ? `  ·  ${tag.toLocaleUpperCase('tr-TR')}` : ''}</Text>
         {r.arabic && <Text style={[styles.arabic, { color: '#FFF6E0' }]}>{r.arabic}</Text>}
         <Text style={[styles.cardText, { color: theme.text }]}>{r.meal}</Text>
         <Pressable onPress={() => Linking.openURL(r.link)}>
@@ -484,7 +524,7 @@ function ItemCard({ item, theme }: { item: Item; theme: Theme }) {
   }
   return (
     <View style={box}>
-      <Text style={[styles.cardKind, { color: theme.accent }]}>❖ HADİS</Text>
+      <Text style={[styles.cardKind, { color: theme.accent }]}>❖ HADİS{tag ? `  ·  ${tag.toLocaleUpperCase('tr-TR')}` : ''}</Text>
       <Text style={[styles.cardText, { color: theme.text }]}>“{item.text}”</Text>
       <Text style={[styles.source, { color: theme.faint }]}>{item.source}</Text>
     </View>
@@ -519,6 +559,7 @@ const styles = StyleSheet.create({
   sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingRight: 20 },
   section: { fontSize: 16, fontWeight: '700', marginBottom: 6, marginHorizontal: 20 },
   chevron: { fontSize: 18, fontWeight: '700' },
+  hint: { fontSize: 12, lineHeight: 17, marginHorizontal: 20, marginTop: 2 },
   groupLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1.2, marginHorizontal: 20, marginTop: 14, marginBottom: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 20 },
   chip: { borderWidth: 1, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 13 },

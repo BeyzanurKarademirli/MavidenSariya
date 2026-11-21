@@ -85,7 +85,8 @@ const GENRES: Record<MoodId, string[]> = {
 };
 
 export type MoodResult = {
-  mood: MoodId;
+  mood: MoodId; // ana hâl
+  moods: MoodId[]; // ana hâl + ona yakın puan alan en fazla 2 hâl daha (karışık duygular)
   confidence: number; // 0..1 (paya, ikinciden farka ve kanıt miktarına göre)
   share: number; // 0..1: dinlediklerinin ne kadarı bu hâli işaret ediyor
   strength: 'güçlü' | 'orta' | 'zayıf';
@@ -112,7 +113,7 @@ const label = (kw: string) => kw.replace(/^=/, '').trim();
 
 const TITLE_WEIGHT = 2; // şarkı adında geçen kelime
 const WEAK_TITLE_WEIGHT = 1; // şarkı adında geçen ama çok yaygın kelime
-const NOW_PLAYING_WEIGHT = 1.6; // şu an çalan şarkı en çok etkiler
+const NOW_PLAYING_WEIGHT = 2.4; // şu an çalan şarkı en çok etkiler (şarkı değişince tahmin de değişsin)
 
 // Şarkı sözlerinde ÇOK sık geçen, tek başına duygu söylemeyen kelimeler: sözlerde sayılmaz,
 // şarkı adında geçerse yarım ağırlık alır (ör. "yol" neredeyse her Türkçe şarkıda geçer).
@@ -147,6 +148,7 @@ export function detectMood(allTracks: Track[], now = new Date(), model?: Model):
   const moods = Object.keys(KEYWORDS) as MoodId[];
   const scores = empty();
   let totalVotes = 0;
+  let evidenceSum = 0; // şarkıların kanıt gücü toplamı (sıradan bağımsız)
   const evidence: string[] = [];
   const trackWords: MoodResult['trackWords'] = {};
   const wf = (kw: string) => model?.words[kw] ?? 1; // öğrenilmiş kelime çarpanı
@@ -154,7 +156,7 @@ export function detectMood(allTracks: Track[], now = new Date(), model?: Model):
   // Her şarkı bir "oy" verir: önce şarkının kendi içinde hangi hâli ne oranda işaret ettiği bulunur
   // (uzun sözlü şarkı tek başına baskın çıkmasın diye oranlanır), sonra yakınlığına göre ağırlıklandırılır.
   tracks.forEach((t, i) => {
-    const recency = t.playedAt ? Math.pow(0.8, i) : NOW_PLAYING_WEIGHT;
+    const recency = t.playedAt ? Math.pow(0.75, i) : NOW_PLAYING_WEIGHT;
     const title = normalize(t.name);
     const lyrics = t.lyrics ? normalize(t.lyrics) : '';
     const genreText = normalize(t.genres.join(' | '));
@@ -211,6 +213,7 @@ export function detectMood(allTracks: Track[], now = new Date(), model?: Model):
     const strength = Math.min(1, songTotal / 4); // yalnızca ad eşleşmesi (2 puan) yarım oy sayılır
     const vote = recency * strength;
     totalVotes += vote;
+    evidenceSum += strength;
     for (const m of ranked) scores[m] += (vote * raw[m]) / songTotal;
   });
 
@@ -229,17 +232,19 @@ export function detectMood(allTracks: Track[], now = new Date(), model?: Model):
   const entries = (Object.entries(scores) as [MoodId, number][]).sort((x, y) => y[1] - x[1]);
   const sum = entries.reduce((s, [, v]) => s + v, 0);
   if (!sum) {
-    return { mood: 'huzur', confidence: 0, share: 0, strength: 'zayıf', uncertain: true, scores, analyzed: tracks, trackWords, evidence: ['Belirgin bir ipucu bulunamadı', ...evidence] };
+    return { mood: 'huzur', moods: ['huzur'], confidence: 0, share: 0, strength: 'zayıf', uncertain: true, scores, analyzed: tracks, trackWords, evidence: ['Belirgin bir ipucu bulunamadı', ...evidence] };
   }
   const [topMood, topScore] = entries[0];
   const second = entries[1]?.[1] ?? 0;
   // share: dinlediklerinin ne kadarı bu hâli işaret ediyor; lead: ikinci hâlden ne kadar önde
   const share = topScore / sum;
   const lead = (topScore - second) / topScore;
-  const coverage = Math.min(1, totalVotes / 4); // yeterince şarkıdan kanıt var mı
-  const confidence = Math.min(1, (0.6 * share + 0.4 * lead) * (0.4 + 0.6 * coverage) * 1.3);
-  const strength: MoodResult['strength'] = confidence >= 0.6 ? 'güçlü' : confidence >= 0.35 ? 'orta' : 'zayıf';
-  return { mood: topMood, confidence, share, strength, uncertain: strength === 'zayıf', scores, analyzed: tracks, trackWords, evidence };
+  const coverage = Math.min(1, evidenceSum / 3); // ~3 şarkı dolusu kanıt varsa tam
+  const confidence = Math.min(1, (0.6 * share + 0.4 * lead) * (0.4 + 0.6 * coverage) * 1.15);
+  const strength: MoodResult['strength'] = confidence >= 0.68 ? 'güçlü' : confidence >= 0.38 ? 'orta' : 'zayıf';
+  // Karışık duygular: ana hâlin en az %60'ı kadar puan alan ve toplamın en az %15'ini oluşturan hâller
+  const mixed = [topMood, ...entries.slice(1, 3).filter(([, v]) => v >= topScore * 0.6 && v / sum >= 0.15).map(([m]) => m)];
+  return { mood: topMood, moods: mixed, confidence, share, strength, uncertain: strength === 'zayıf', scores, analyzed: tracks, trackWords, evidence };
 }
 
 /** Sözlerde bir anahtar kelimenin kaç kez geçtiği */

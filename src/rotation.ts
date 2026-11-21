@@ -49,6 +49,7 @@ function take<T>(list: T[], start: number, n: number): T[] {
 }
 
 export type Page = { items: Item[]; seenAyat: number; totalAyat: number; seenHadis: number; totalHadis: number };
+export type MultiPage = { items: { item: Item; mood: MoodId }[]; pages: Record<string, Page> };
 
 /** Sıradaki ayet ve hadisleri verir ve sırayı ilerletir (gösterilenler arkaya geçer). */
 export async function nextPage(mood: MoodId): Promise<Page> {
@@ -66,4 +67,39 @@ export async function nextPage(mood: MoodId): Promise<Page> {
     seenHadis: Math.min(pos.h + h.length, hadis.length) || hadis.length,
     totalHadis: hadis.length,
   };
+}
+
+/**
+ * Birden fazla hâl seçiliyse: her hâlden sıradaki 1 ayet; 1–2 hâlde her hâlden 1 hadis,
+ * 3 hâlde yalnızca ilk hâlden 1 hadis. Tek hâlde normal sayfa (2 ayet + 1 hadis).
+ */
+export async function nextPageMulti(moods: MoodId[]): Promise<MultiPage> {
+  if (moods.length <= 1) {
+    const p = await nextPage(moods[0]);
+    return { items: p.items.map((item) => ({ item, mood: moods[0] })), pages: { [moods[0]]: p } };
+  }
+  const state = await load();
+  const items: MultiPage['items'] = [];
+  const pages: Record<string, Page> = {};
+  moods.forEach((mood, idx) => {
+    const { ayat, hadis } = ordered(mood);
+    const pos = state[mood] ?? { a: 0, h: 0 };
+    const a = take(ayat, pos.a, 1);
+    const withHadis = moods.length <= 2 || idx === 0;
+    const h = withHadis ? take(hadis, pos.h, 1) : [];
+    state[mood] = { a: (pos.a + a.length) % ayat.length, h: (pos.h + h.length) % hadis.length };
+    a.forEach((item) => items.push({ item, mood }));
+    h.forEach((item) => items.push({ item, mood }));
+    pages[mood] = {
+      items: [...a, ...h],
+      seenAyat: Math.min(pos.a + a.length, ayat.length) || ayat.length,
+      totalAyat: ayat.length,
+      seenHadis: Math.min(pos.h + h.length, hadis.length) || hadis.length,
+      totalHadis: hadis.length,
+    };
+  });
+  await save(state);
+  // Ayetler önce, hadisler arada kalsın diye: ayet, ayet, (ayet), hadis, hadis
+  items.sort((x, y) => (x.item.kind === y.item.kind ? 0 : x.item.kind === 'ayet' ? -1 : 1));
+  return { items, pages };
 }

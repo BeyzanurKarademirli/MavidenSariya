@@ -56,10 +56,11 @@ function tuneWord(m: Model, kw: string, by: number) {
   m.words[kw] = Math.max(0.3, Math.min(1.6, (m.words[kw] ?? 1) + by));
 }
 
+// Birden fazla hâl olabilir (karışık duygular); ağırlık hâl sayısına bölünür.
 export type Feedback =
-  | { kind: 'confirm'; predicted: MoodId } // 👍 tahmin doğru
-  | { kind: 'reject'; predicted: MoodId } // 👎 tahmin yanlış (henüz doğrusunu seçmedi)
-  | { kind: 'correct'; predicted: MoodId; chosen: MoodId }; // kullanıcı doğru hâli seçti
+  | { kind: 'confirm'; predicted: MoodId[] } // 👍 tahmin doğru
+  | { kind: 'reject'; predicted: MoodId[] } // 👎 tahmin yanlış (henüz doğrusunu seçmedi)
+  | { kind: 'correct'; predicted: MoodId[]; chosen: MoodId[] }; // kullanıcı doğru hâl(ler)i seçti
 
 /**
  * Geri bildirimi öğrenir. tracks: tahminde kullanılan şarkılar (en yeni başta);
@@ -77,19 +78,25 @@ export async function learn(
     tr.name = t.name;
     const words = trackWords[t.id] ?? {};
 
-    if (fb.kind === 'confirm') {
-      bump(tr.moods, fb.predicted, 1.0 * w);
-      t.artists.forEach((a) => bump((m.artists[artistKey(a)] ??= {}), fb.predicted, 0.4 * w));
-      (words[fb.predicted] ?? []).forEach((kw) => tuneWord(m, kw, 0.05 * w));
-    } else {
-      // reddedilen ya da düzeltilen tahmin: o hâle verilen katkı zayıflar
-      bump(tr.moods, fb.predicted, -0.8 * w);
-      (words[fb.predicted] ?? []).forEach((kw) => tuneWord(m, kw, -0.12 * w));
-      if (fb.kind === 'correct') {
-        bump(tr.moods, fb.chosen, 1.5 * w);
-        t.artists.forEach((a) => bump((m.artists[artistKey(a)] ??= {}), fb.chosen, 0.6 * w));
-        (words[fb.chosen] ?? []).forEach((kw) => tuneWord(m, kw, 0.08 * w));
+    const reinforce = (list: MoodId[], track: number, artist: number, word: number) => {
+      const k = 1 / Math.max(1, list.length);
+      for (const mood of list) {
+        bump(tr.moods, mood, track * w * k);
+        t.artists.forEach((a) => bump((m.artists[artistKey(a)] ??= {}), mood, artist * w * k));
+        (words[mood] ?? []).forEach((kw) => tuneWord(m, kw, word * w * k));
       }
+    };
+    if (fb.kind === 'confirm') {
+      reinforce(fb.predicted, 1.0, 0.4, 0.05);
+    } else {
+      // reddedilen ya da düzeltilen tahmin: seçilmeyen tahmin hâllerine verilen katkı zayıflar
+      const chosen = fb.kind === 'correct' ? fb.chosen : [];
+      const wrong = fb.predicted.filter((x) => !chosen.includes(x));
+      for (const mood of wrong) {
+        bump(tr.moods, mood, -0.8 * w);
+        (words[mood] ?? []).forEach((kw) => tuneWord(m, kw, -0.12 * w));
+      }
+      if (chosen.length) reinforce(chosen, 1.5 * Math.min(chosen.length, 2), 0.6, 0.08);
     }
     if (!Object.keys(tr.moods).length) delete m.tracks[t.id];
   });
