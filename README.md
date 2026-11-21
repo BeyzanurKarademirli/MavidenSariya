@@ -26,7 +26,7 @@ Liste üç kaynağın birleşimine dayanır:
 
 ## Ayet ve hadisler
 
-- **Ayetler (153 referans):** `src/content.ts` içinde yalnızca sure/ayet numarası tutulur. Meal ve Arapça metin `npm run ayat` komutuyla **Diyanet İşleri Başkanlığı meali** verisinden (tanzil.net `tr.diyanet`, `quran-json` paketi) `src/data/ayat.json` dosyasına üretilir. Uzun ayetlerde gösterilen kesit mealde **kelimesi kelimesine** geçmek zorundadır; geçmezse komut hata verir. Kesitli ayetlerde Arapça metin gösterilmez (tam metin ile kısmi meal karışmasın diye).
+- **Ayetler (393 referans, 287 farklı ayet; hâl başına 10–16):** `src/content.ts` içinde yalnızca sure/ayet numarası tutulur. Meal ve Arapça metin `npm run ayat` komutuyla **Diyanet İşleri Başkanlığı meali** verisinden (tanzil.net `tr.diyanet`, `quran-json` paketi) `src/data/ayat.json` dosyasına üretilir. Uzun ayetlerde gösterilen kesit mealde **kelimesi kelimesine** geçmek zorundadır; geçmezse komut hata verir. Kesitli ayetlerde Arapça metin gösterilmez (tam metin ile kısmi meal karışmasın diye).
 - **Hadisler (79):** Elle derlenmiş, kaynağı (Buhârî, Müslim, Tirmizî…) yazılı özet meallerdir. Yayına almadan önce bir ilahiyatçıya kontrol ettirmen önerilir.
 
 Ayet eklemek için `src/content.ts`'de ilgili hâle `a(sure, 'ayet')` veya `a(sure, 'ayet', 'mealden birebir kesit')` ekle, sonra:
