@@ -112,7 +112,7 @@ export function Settings(p: Props) {
                 label="Kaynaklar"
                 sub="Ayet mealleri: Diyanet İşleri Başkanlığı meali (veri: tanzil.net). Hadisler: kaynaklarıyla özet. Şarkı sözleri: LRCLIB. Yapay zekâ: Google Gemini, Cloudflare Workers AI."
               />
-              <Row label="Ruh Hâli" sub={`Sürüm ${version} · © 2026 Beyzanur Karademirli. Tüm hakları saklıdır.`} />
+              <Row label="Mâverâ" sub={`mavi ışıktan sarı ışığa · Sürüm ${version} · © 2026 Beyzanur Karademirli. Tüm hakları saklıdır.`} />
             </Section>
           </ScrollView>
         </View>

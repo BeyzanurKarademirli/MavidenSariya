@@ -8,7 +8,7 @@ import { FadeIn, Float, Glow, MoodBackground, Particles, PressableScale } from '
 const PAGES = [
   {
     emoji: null,
-    title: 'Ruh Hâli’ne hoş geldin',
+    title: 'Mâverâ’ya hoş geldin',
     text: 'Dinlediğin şarkılardan o anki hâlini sezer, kalbine iyi gelecek bir ayet ve hadis getirir.',
   },
   {

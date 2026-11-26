@@ -1,6 +1,6 @@
 # Her main güncellemesinde Android APK derler ve GitHub Releases sayfasına koyar.
 # Telefondan indirmek için (her zaman en yeni sürüm):
-# https://github.com/BeyzanurKarademirli/MavidenSariya/releases/latest/download/RuhHali.apk
+# https://github.com/BeyzanurKarademirli/MavidenSariya/releases/latest/download/Mavera.apk
 name: Android APK
 
 on:
@@ -64,17 +64,21 @@ jobs:
         run: |
           echo "Yapay zekâ sunucusu: ${EXPO_PUBLIC_AI_URL:-yok}"
           ./gradlew assembleRelease --no-daemon
-          mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/RuhHali.apk
+          mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/Mavera.apk
+          # Eski indirme bağlantısı da çalışmaya devam etsin
+          cp app/build/outputs/apk/release/Mavera.apk app/build/outputs/apk/release/RuhHali.apk
 
       - name: Release oluştur
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-${{ github.run_number }}
-          name: Ruh Hâli (sürüm ${{ github.run_number }})
+          name: Mâverâ (sürüm ${{ github.run_number }})
           body: |
-            Telefona kurmak için aşağıdaki **RuhHali.apk** dosyasına dokun, indir ve aç.
+            Telefona kurmak için aşağıdaki **Mavera.apk** dosyasına dokun, indir ve aç.
             Android "bilinmeyen kaynak" uyarısı verirse: Ayarlar → Bu kaynağa izin ver → Yükle.
 
             Yapay zekâ: ${{ steps.ai.outputs.ai_url && 'açık ✨' || 'kapalı (sunucu anahtarları henüz eklenmedi)' }}
-          files: android/app/build/outputs/apk/release/RuhHali.apk
+          files: |
+            android/app/build/outputs/apk/release/Mavera.apk
+            android/app/build/outputs/apk/release/RuhHali.apk
           make_latest: true

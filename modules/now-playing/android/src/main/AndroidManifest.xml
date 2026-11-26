@@ -4,7 +4,7 @@
          medya oturumlarındaki (çalan şarkı) bilgiyi okur, diğer bildirimlerin içeriğine bakmaz. -->
     <service
       android:name="expo.modules.nowplaying.NowPlayingListenerService"
-      android:label="Ruh Hâli · şu an çalan şarkı"
+      android:label="Mâverâ · şu an çalan şarkı"
       android:exported="true"
       android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
       <intent-filter>

@@ -4,7 +4,7 @@ import { Track } from './spotify';
 // Şarkı sözleri: LRCLIB (https://lrclib.net) — ücretsiz, anahtar gerektirmeyen açık bir söz veritabanı.
 // Spotify Web API şarkı sözü vermediği için sözler buradan alınır. Bulunamayan şarkılar sessizce atlanır.
 const API = 'https://lrclib.net/api';
-const HEADERS = { 'Lrclib-Client': 'RuhHali/1.0' };
+const HEADERS = { 'Lrclib-Client': 'Mavera/1.1' };
 const CACHE_PREFIX = 'lyrics:'; // Spotify şarkı kimliğine göre önbellek ("" = söz bulunamadı)
 const MAX_TRACKS = 12; // en son dinlenen şarkılardan kaç tanesinin sözüne bakılacağı (mood.ts ile aynı)
 

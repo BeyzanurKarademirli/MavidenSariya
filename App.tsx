@@ -285,7 +285,7 @@ export default function App() {
             <Text style={styles.permEmoji}>🎧</Text>
             <Text style={styles.permTitle}>Telefonunda çalan şarkıyı görebilmem için izin gerekiyor</Text>
             <Text style={styles.permText}>
-              Ruh Hâli; YouTube Music, Spotify, telefonundaki müzik çalar gibi hangi uygulamadan dinlersen dinle, çalan
+              Mâverâ; YouTube Music, Spotify, telefonundaki müzik çalar gibi hangi uygulamadan dinlersen dinle, çalan
               şarkının <Text style={{ fontWeight: '700' }}>adını ve sanatçısını</Text> okuyabilmek için Android'in{' '}
               <Text style={{ fontWeight: '700' }}>“bildirim erişimi”</Text> iznine ihtiyaç duyar.
             </Text>
@@ -302,8 +302,8 @@ export default function App() {
               <Text style={styles.btnText}>İzin ver</Text>
             </PressableScale>
             <Text style={styles.permHint}>
-              Açılan listede “Ruh Hâli”yi bulup izni aç, sonra geri dön.{'\n'}
-              Ruh Hâli gri ve açılamıyorsa (Android 13 ve sonrası, uygulama Play Store dışından kurulduğunda):
+              Açılan listede “Mâverâ”yı bulup izni aç, sonra geri dön.{'\n'}
+              Mâverâ gri ve açılamıyorsa (Android 13 ve sonrası, uygulama Play Store dışından kurulduğunda):
             </Text>
             <Pressable style={styles.linkBtn} onPress={() => openAppSettings()}>
               <Text style={[styles.link, { color: '#FFF6E0', textAlign: 'center' }]}>
@@ -339,7 +339,8 @@ export default function App() {
               <Image source={require('./assets/icon.png')} style={styles.loginIcon} />
             </Float>
           </View>
-          <Text style={styles.loginTitle}>Ruh Hâli</Text>
+          <Text style={styles.loginTitle}>Mâverâ</Text>
+          <Text style={styles.loginTag}>mavi ışıktan sarı ışığa</Text>
           <Text style={styles.loginSub}>
             Dinlediğin şarkılardan o anki hâlini sezer,{'\n'}kalbine iyi gelecek bir ayet ve hadis getirir.
           </Text>
@@ -717,6 +718,7 @@ const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
   loadingIcon: { width: 96, height: 96, borderRadius: 26 },
   loadingText: { color: '#FFF6E0', marginTop: 28, fontSize: 15, letterSpacing: 0.3 },
+  loginTag: { color: 'rgba(255,246,224,0.7)', fontSize: 13, fontStyle: 'italic', letterSpacing: 1.5, marginTop: 4 },
   loginNote: { color: 'rgba(255,246,224,0.75)', fontSize: 12.5, textAlign: 'center', marginTop: 8, marginBottom: 6, paddingHorizontal: 12 },
   permEmoji: { fontSize: 54, textAlign: 'center' },
   permTitle: { color: '#FFF6E0', fontSize: 22, fontWeight: '800', textAlign: 'center', marginTop: 12, lineHeight: 29 },

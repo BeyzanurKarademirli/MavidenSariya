@@ -1,4 +1,6 @@
-# Ruh Hâli 🌙
+# Mâverâ 🌙
+
+*mavi ışıktan sarı ışığa* — MAVi + saRı → **Mâverâ** (“görünenin ötesi”). Ekranın mavi ışığından ayetin sıcak ışığına.
 
 Spotify'da dinlediğin şarkılardan o anki ruh hâlini tahmin eden ve sana uygun bir **ayet** ve **hadis** gösteren mobil uygulama (Expo / React Native, iOS + Android).
 
@@ -72,7 +74,7 @@ Spotify olmadan denemek için giriş ekranındaki **"Spotify olmadan dene"** ba�
 
 ## İndirme (Android)
 
-En yeni sürüm her zaman bu linkte: https://github.com/BeyzanurKarademirli/MavidenSariya/releases/latest/download/RuhHali.apk
+En yeni sürüm her zaman bu linkte: https://github.com/BeyzanurKarademirli/MavidenSariya/releases/latest/download/Mavera.apk
 
 ## Lisans
 

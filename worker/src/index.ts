@@ -1,4 +1,4 @@
-// Ruh Hâli yapay zekâ aracı sunucusu (Cloudflare Worker)
+// Mâverâ yapay zekâ aracı sunucusu (Cloudflare Worker)
 //
 // Uygulama → bu sunucu → 1) Gemini API (ücretsiz katman) → 2) Cloudflare Workers AI (ücretsiz günlük kota)
 // API anahtarı yalnızca burada (Worker secret) durur; uygulamanın içinde yoktur.
@@ -206,12 +206,12 @@ async function analyze(req: Request, env: Env) {
 }
 
 const PRIVACY_HTML = `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ruh Hâli · Gizlilik Politikası</title>
+<title>Mâverâ · Gizlilik Politikası</title>
 <style>body{font-family:system-ui,-apple-system,sans-serif;max-width:720px;margin:0 auto;padding:24px 16px;line-height:1.6;color:#1f2937;background:#fff}
 h1{font-size:1.6rem}h2{font-size:1.15rem;margin-top:1.6em}@media (prefers-color-scheme:dark){body{background:#0d1117;color:#e5e7eb}}</style></head><body>
-<h1>Ruh Hâli · Gizlilik Politikası</h1>
+<h1>Mâverâ · Gizlilik Politikası</h1>
 <p>Son güncelleme: 26 Kasım 2026</p>
-<p>Ruh Hâli, dinlediğin şarkılardan o anki ruh hâlini tahmin edip sana uygun ayet ve hadis gösteren bir uygulamadır. Gizliliğine önem veririz; bu sayfa hangi bilgilerin nasıl kullanıldığını açıklar.</p>
+<p>Mâverâ, dinlediğin şarkılardan o anki ruh hâlini tahmin edip sana uygun ayet ve hadis gösteren bir uygulamadır. Gizliliğine önem veririz; bu sayfa hangi bilgilerin nasıl kullanıldığını açıklar.</p>
 <h2>Telefonda kalan bilgiler</h2>
 <ul>
 <li><b>Dinleme geçmişi:</b> “Telefonumda çalanlar” seçildiğinde, Android'in <i>bildirim erişimi</i> izniyle yalnızca müzik uygulamalarının çalan şarkı bilgisi (şarkı adı, sanatçı, albüm, süre, çalan uygulama) okunur ve son 60 şarkı yalnızca telefonunda saklanır. Mesajların ve diğer bildirimlerin içeriği okunmaz, saklanmaz.</li>
@@ -221,7 +221,7 @@ h1{font-size:1.6rem}h2{font-size:1.15rem;margin-top:1.6em}@media (prefers-color-
 <h2>Telefondan çıkan bilgiler</h2>
 <ul>
 <li><b>Şarkı sözü servisi (LRCLIB, lrclib.net):</b> Şarkı sözlerini bulmak için şarkı adı, sanatçı, albüm ve süre gönderilir.</li>
-<li><b>Yapay zekâ tahmini (isteğe bağlı, ayarlardan kapatılabilir):</b> Şarkı adı, sanatçı ve şarkı sözü Ruh Hâli sunucusuna (Cloudflare) gönderilir; sunucu bunları ruh hâli tahmini için Google Gemini API'ye ya da Cloudflare Workers AI'ya iletir. Google'ın ücretsiz katmanında gönderilen içerik Google tarafından ürünlerini geliştirmek için kullanılabilir. Bu isteklerde senin adın, hesabın, cihaz kimliğin ya da dinleme geçmişinin tamamı gönderilmez. Şarkı başına üretilen tahmin, aynı şarkı tekrar sorulduğunda kullanılmak üzere sunucuda en fazla 60 gün saklanır.</li>
+<li><b>Yapay zekâ tahmini (isteğe bağlı, ayarlardan kapatılabilir):</b> Şarkı adı, sanatçı ve şarkı sözü Mâverâ sunucusuna (Cloudflare) gönderilir; sunucu bunları ruh hâli tahmini için Google Gemini API'ye ya da Cloudflare Workers AI'ya iletir. Google'ın ücretsiz katmanında gönderilen içerik Google tarafından ürünlerini geliştirmek için kullanılabilir. Bu isteklerde senin adın, hesabın, cihaz kimliğin ya da dinleme geçmişinin tamamı gönderilmez. Şarkı başına üretilen tahmin, aynı şarkı tekrar sorulduğunda kullanılmak üzere sunucuda en fazla 60 gün saklanır.</li>
 <li><b>Spotify (isteğe bağlı):</b> Spotify hesabıyla bağlanırsan, son dinlediğin ve şu an çalan şarkılar Spotify'dan okunur. Spotify giriş anahtarı yalnızca telefonunda saklanır.</li>
 </ul>
 <h2>Satış ve reklam</h2>

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MoodId } from './content';
 import { Track } from './spotify';
 
-// Yapay zekâ ile tahmin: şarkı adı + sanatçı + söz, Ruh Hâli sunucusuna (Cloudflare Worker) gönderilir;
+// Yapay zekâ ile tahmin: şarkı adı + sanatçı + söz, Mâverâ sunucusuna (Cloudflare Worker) gönderilir;
 // sunucu Gemini'ye (olmazsa Cloudflare Workers AI'ya) sorar. Sunucuya kullanıcı kimliği gönderilmez.
 // Her şarkının sonucu telefonda saklanır; aynı şarkı tekrar sorulmaz.
 // Günlük hak: kullanıcı başına günde DAILY_LIMIT yeni şarkı. Dolunca telefondaki yöntemle devam edilir.
