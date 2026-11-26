@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Animated, AppState, Image, LayoutAnimation, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, AppState, Image, LayoutAnimation, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AmiriQuran_400Regular, useFonts } from '@expo-google-fonts/amiri-quran';
 import * as WebBrowser from 'expo-web-browser';
@@ -15,6 +15,10 @@ import { detectMood, MoodResult } from './src/mood';
 import { learn, loadModel, Model, resetModel } from './src/learning';
 import { clearDeviceHistory, deviceSupported, hasDevicePermission, openAppSettings, openDevicePermission, readDeviceHistory } from './src/device';
 import { getSource, setSource, Source } from './src/source';
+import { AI_URL, AiInfo, attachAi, clearAiCache, isAiEnabled, setAiEnabled } from './src/ai';
+import { Settings } from './src/Settings';
+import { Welcome } from './src/Welcome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   clearToken,
   discovery,
@@ -30,7 +34,8 @@ WebBrowser.maybeCompleteAuthSession();
 
 const redirectUri = makeRedirectUri({ scheme: 'ruhhali', path: 'callback' });
 
-type Phase = 'checking' | 'login' | 'permission' | 'loading' | 'ready' | 'error';
+type Phase = 'checking' | 'welcome' | 'login' | 'permission' | 'loading' | 'ready' | 'error';
+const ONBOARDED = 'onboarded:v1';
 
 export default function App() {
   const [phase, setPhase] = useState<Phase>('checking');
@@ -45,6 +50,9 @@ export default function App() {
   const [pageNo, setPageNo] = useState(0);
   const [loadingText, setLoadingText] = useState('Dinlediklerine bakıyorum…');
   const [demo, setDemo] = useState(false);
+  const [aiInfo, setAiInfo] = useState<AiInfo | null>(null);
+  const [aiOn, setAiOn] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [chipsExpanded, setChipsExpanded] = useState(false);
   const [source, setSourceState] = useState<Source | null>(null);
   const [model, setModel] = useState<Model | null>(null);
@@ -68,6 +76,9 @@ export default function App() {
   const load = useCallback(async (silent = false) => {
     if (!silent) setPhase('loading');
     try {
+      // İlk açılış: kısa tanıtım
+      if (!(await AsyncStorage.getItem(ONBOARDED).catch(() => '1'))) return setPhase('welcome');
+      setAiOn(await isAiEnabled());
       let src = await getSource();
       let list: Track[];
       if (src === 'device' && deviceSupported) {
@@ -84,7 +95,10 @@ export default function App() {
       }
       setSourceState(src);
       setLoadingText('Şarkı sözlerini okuyorum…');
-      const withLyrics = await attachLyrics(list);
+      const lyrics = await attachLyrics(list);
+      if (AI_URL && (await isAiEnabled())) setLoadingText('Şarkılarının anlamını yorumluyorum…');
+      const { tracks: withLyrics, info } = await attachAi(lyrics);
+      setAiInfo(info);
       const mdl = await loadModel();
       setModel(mdl);
       setTracks(withLyrics);
@@ -245,6 +259,18 @@ export default function App() {
           <Text style={styles.loadingText}>{loadingText}</Text>
         </FadeIn>
       </View>
+    );
+  }
+
+  // ───────── İlk açılış tanıtımı ─────────
+  if (phase === 'welcome') {
+    return (
+      <Welcome
+        onDone={async () => {
+          await AsyncStorage.setItem(ONBOARDED, '1').catch(() => {});
+          load();
+        }}
+      />
     );
   }
 
@@ -409,6 +435,9 @@ export default function App() {
       <ScrollView contentContainerStyle={{ paddingBottom: 56 }} showsVerticalScrollIndicator={false}>
         {/* Hâl başlığı */}
         <View style={styles.hero}>
+          <Pressable onPress={() => setSettingsOpen(true)} hitSlop={14} style={styles.gear}>
+            <Text style={{ fontSize: 22, color: theme.sub }}>⚙︎</Text>
+          </Pressable>
           <View style={[styles.center, { height: 130 }]}>
             <Glow color={theme.accent} size={140} />
             <Float>
@@ -452,6 +481,7 @@ export default function App() {
                 </PressableScale>
               </View>
             )}
+            {!demo && !override && aiInfo && <AiBadge info={aiInfo} usedAi={tracks.some((t) => t.ai)} theme={theme} />}
             {!demo && fb.state === 'thanks' && fb.note && (
               <FadeIn>
                 <Text style={[styles.fbThanks, { color: theme.accent }]}>✓ {fb.note}</Text>
@@ -529,65 +559,9 @@ export default function App() {
                 </View>
               </FadeIn>
             ))}
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: 12 }}>
-              <Pressable style={styles.linkBtn} onPress={() => load()}>
-                <Text style={[styles.link, { color: theme.accent }]}>↻ Yenile</Text>
-              </Pressable>
-              <Pressable
-                style={styles.linkBtn}
-                onPress={async () => {
-                  await clearToken();
-                  await setSource(null);
-                  setSourceState(null);
-                  setPhase('login');
-                }}
-              >
-                <Text style={[styles.link, { color: theme.faint }]}>Kaynağı değiştir</Text>
-              </Pressable>
-            </View>
-            {!!model?.events && (
-              <Pressable
-                style={styles.linkBtn}
-                onPress={() =>
-                  Alert.alert('Öğrendiklerimi sıfırla', `${model.events} geri bildirimden öğrendiklerim silinecek. Emin misin?`, [
-                    { text: 'Vazgeç', style: 'cancel' },
-                    {
-                      text: 'Sıfırla',
-                      style: 'destructive',
-                      onPress: async () => {
-                        setModel(await resetModel());
-                        setFb({ state: 'none' });
-                        load(true);
-                      },
-                    },
-                  ])
-                }
-              >
-                <Text style={[styles.link, { color: theme.faint, textAlign: 'center', fontSize: 12.5 }]}>
-                  🧠 {model.events} geri bildirimden öğrendim · sıfırla
-                </Text>
-              </Pressable>
-            )}
-            {source === 'device' && tracks.length > 0 && (
-              <Pressable
-                style={styles.linkBtn}
-                onPress={() =>
-                  Alert.alert('Dinleme geçmişini sil', 'Telefonda tutulan dinleme geçmişin silinecek. Emin misin?', [
-                    { text: 'Vazgeç', style: 'cancel' },
-                    {
-                      text: 'Sil',
-                      style: 'destructive',
-                      onPress: () => {
-                        clearDeviceHistory();
-                        load(true);
-                      },
-                    },
-                  ])
-                }
-              >
-                <Text style={[styles.link, { color: theme.faint, textAlign: 'center', fontSize: 12.5 }]}>🗑 Dinleme geçmişimi sil</Text>
-              </Pressable>
-            )}
+            <Pressable style={[styles.linkBtn, { alignSelf: 'center', marginTop: 8 }]} onPress={() => load()}>
+              <Text style={[styles.link, { color: theme.accent }]}>↻ Yenile</Text>
+            </Pressable>
           </>
         )}
         {demo && (
@@ -602,6 +576,60 @@ export default function App() {
           özet olarak verilmiştir. Şarkı sözleri LRCLIB'den alınır. Bu uygulama bir tahmin yapar; gerçek hâlini en iyi sen bilirsin.
         </Text>
       </ScrollView>
+      <Settings
+        visible={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        theme={theme}
+        source={source}
+        aiEnabled={aiOn}
+        aiInfo={aiInfo}
+        learnedCount={model?.events ?? 0}
+        historyCount={tracks.length}
+        onToggleAi={async (on) => {
+          setAiOn(on);
+          await setAiEnabled(on);
+          load(true);
+        }}
+        onChangeSource={async () => {
+          setSettingsOpen(false);
+          await clearToken();
+          await setSource(null);
+          setSourceState(null);
+          setPhase('login');
+        }}
+        onClearHistory={() => {
+          clearDeviceHistory();
+          load(true);
+        }}
+        onResetLearning={async () => {
+          setModel(await resetModel());
+          setFb({ state: 'none' });
+          load(true);
+        }}
+        onClearAiCache={async () => {
+          await clearAiCache();
+        }}
+      />
+    </View>
+  );
+}
+
+/** Yapay zekâ durumu: kullanıldı mı, hak doldu mu, ulaşılamadı mı? */
+function AiBadge({ info, usedAi, theme }: { info: AiInfo; usedAi: boolean; theme: Theme }) {
+  let text = '';
+  let warn = false;
+  if (info.status === 'limit') {
+    text = `Bugünkü yapay zekâ hakkın doldu (${info.used}/${info.limit} şarkı). Yarın yenilenir; şimdilik telefondaki yöntemle tahmin ediyorum.`;
+    warn = true;
+  } else if (info.status === 'offline' || info.status === 'unavailable') {
+    text = 'Yapay zekâya şu an ulaşılamadı; telefondaki yöntemle tahmin ettim.';
+    warn = true;
+  } else if (info.status === 'ok' && usedAi) {
+    text = `✨ Yapay zekâ ile yorumlandı · bugün ${info.used}/${info.limit}`;
+  } else return null;
+  return (
+    <View style={[styles.aiBadge, warn && { borderColor: 'rgba(240,165,72,0.55)', backgroundColor: 'rgba(240,165,72,0.12)' }]}>
+      <Text style={[styles.aiText, { color: warn ? '#FFD9A8' : theme.sub }]}>{text}</Text>
     </View>
   );
 }
@@ -683,6 +711,9 @@ function ItemCard({ item, theme, tag }: { item: Item; theme: Theme; tag?: string
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
+  gear: { position: 'absolute', top: 52, right: 20, zIndex: 5, padding: 6 },
+  aiBadge: { alignSelf: 'center', marginTop: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', borderRadius: 14, paddingVertical: 6, paddingHorizontal: 12, maxWidth: '92%' },
+  aiText: { fontSize: 12.5, textAlign: 'center', lineHeight: 17 },
   center: { alignItems: 'center', justifyContent: 'center' },
   loadingIcon: { width: 96, height: 96, borderRadius: 26 },
   loadingText: { color: '#FFF6E0', marginTop: 28, fontSize: 15, letterSpacing: 0.3 },

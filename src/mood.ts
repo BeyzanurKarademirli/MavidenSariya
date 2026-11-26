@@ -140,6 +140,7 @@ export function recentTracks(all: Track[], now = new Date()): Track[] {
   return recent.slice(0, MAX_TRACKS);
 }
 
+const AI_WEIGHT = 5; // yapay zekânın şarkı için verdiği hâl (puan 0–1 ile çarpılır): en güçlü ipucu
 const LEARN_TRACK_WEIGHT = 1.8; // kullanıcının bir şarkı için öğrettiği hâl
 const LEARN_ARTIST_WEIGHT = 0.7; // kullanıcının bir sanatçı için öğrettiği hâl
 
@@ -171,9 +172,11 @@ export function detectMood(allTracks: Track[], now = new Date(), model?: Model):
       if (kw) (tw[mood] ??= []).push(kw);
     };
 
+    // Yapay zekâ şarkıyı okuduysa, kelime saymanın etkisi azalır (anlamı zaten o yorumladı)
+    const kwScale = t.ai?.moods?.length ? 0.3 : 1;
     for (const mood of moods) {
       const titleKw = KEYWORDS[mood].find((kw) => hit(title, kw));
-      if (titleKw) add(mood, (WEAK.has(titleKw) ? WEAK_TITLE_WEIGHT : TITLE_WEIGHT) * wf(titleKw), label(titleKw), titleKw);
+      if (titleKw) add(mood, (WEAK.has(titleKw) ? WEAK_TITLE_WEIGHT : TITLE_WEIGHT) * wf(titleKw) * kwScale, label(titleKw), titleKw);
       if (lyrics) {
         let distinct = 0;
         for (const kw of KEYWORDS[mood]) {
@@ -182,12 +185,15 @@ export function detectMood(allTracks: Track[], now = new Date(), model?: Model):
           if (!c) continue;
           distinct++;
           // Tekrar (nakarat) önemlidir ama sınırlı: 1 kez → 0.6, 2 → 0.9, 4+ → 1.2
-          add(mood, LYRIC_WEIGHT * (1 + Math.log2(Math.min(c, 4)) * 0.5) * wf(kw), label(kw), kw);
+          add(mood, LYRIC_WEIGHT * (1 + Math.log2(Math.min(c, 4)) * 0.5) * wf(kw) * kwScale, label(kw), kw);
         }
       }
       if (GENRES[mood].some((g) => genreText.includes(normalize(g).trim()))) add(mood, 0.8);
     }
     for (const [name, mood] of ARTISTS) if (artist.includes(name)) add(mood, 1.5);
+
+    // Yapay zekâ: şarkının anlamını okuyup verdiği hâller (mecaz, ironi, bağlam)
+    for (const m of t.ai?.moods ?? []) if (MOODS[m.id]) add(m.id, AI_WEIGHT * m.score, '✨ yapay zekâ');
 
     // Kullanıcının öğrettikleri: bu şarkı ve sanatçıları için daha önce seçtiği/onayladığı hâller
     const learnedTrack = model?.tracks[t.id]?.moods ?? {};
@@ -205,7 +211,8 @@ export function detectMood(allTracks: Track[], now = new Date(), model?: Model):
       `"${t.name}"${t.playedAt ? '' : ' · şimdi'} → ` +
         (ranked.length
           ? ranked.slice(0, 2).map((m) => `${MOOD_LABELS[m]}${words[m]?.length ? ` (${words[m]!.slice(0, 3).join(', ')})` : ''}`).join(' · ')
-          : 'belirgin bir ipucu yok'),
+          : 'belirgin bir ipucu yok') +
+        (t.ai?.reason ? ` — “${t.ai.reason}”` : ''),
     );
     if (!songTotal) return;
 
@@ -213,7 +220,7 @@ export function detectMood(allTracks: Track[], now = new Date(), model?: Model):
     const strength = Math.min(1, songTotal / 4); // yalnızca ad eşleşmesi (2 puan) yarım oy sayılır
     const vote = recency * strength;
     totalVotes += vote;
-    evidenceSum += strength;
+    evidenceSum += strength * (t.ai?.moods?.length ? 2 : 1); // yapay zekânın okuduğu şarkı daha güçlü kanıt
     for (const m of ranked) scores[m] += (vote * raw[m]) / songTotal;
   });
 

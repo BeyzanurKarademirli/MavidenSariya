@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { refreshAsync, TokenResponse } from 'expo-auth-session';
+import type { MoodId } from './content';
 
 // https://developer.spotify.com/dashboard adresinden aldığınız Client ID
 export const SPOTIFY_CLIENT_ID = process.env.EXPO_PUBLIC_SPOTIFY_CLIENT_ID ?? '';
@@ -20,6 +21,7 @@ export type Track = {
   genres: string[];
   lyrics?: string; // LRCLIB'den gelen düz şarkı sözü (varsa)
   source?: string; // telefonda çalınan şarkılarda: hangi uygulamadan (YouTube Music, Spotify...)
+  ai?: { moods: { id: MoodId; score: number }[]; reason?: string; provider?: string }; // yapay zekâ tahmini (varsa)
   image?: string;
   playedAt?: string;
 };

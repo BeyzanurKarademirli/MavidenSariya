@@ -1,0 +1,19 @@
+# Bu dosyadan deploy.mjs gerçek wrangler.toml'u üretir (KV kimliği otomatik doldurulur).
+name = "ruhhali"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+GEMINI_MODELS = "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite"
+WORKERS_AI_MODEL = "@cf/google/gemma-3-12b-it"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "SONGS"
+id = "__KV_ID__"
+
+[observability]
+enabled = true

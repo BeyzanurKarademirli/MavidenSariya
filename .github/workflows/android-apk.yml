@@ -37,12 +37,32 @@ jobs:
       - name: Bağımlılıkları kur
         run: npm ci
 
+      # Yapay zekâ sunucusu (Cloudflare Worker). Gerekli gizli anahtarlar GitHub → Settings → Secrets → Actions:
+      #   CLOUDFLARE_API_TOKEN (Cloudflare "Edit Cloudflare Workers" şablonuyla oluşturulan token)
+      #   GEMINI_API_KEY       (Google AI Studio'dan ücretsiz API anahtarı)
+      # Anahtar yoksa ya da bir sorun çıkarsa APK yine derlenir; uygulama yapay zekâsız çalışır.
+      - name: Yapay zekâ sunucusunu yayınla
+        id: ai
+        continue-on-error: true
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          npm ci
+          node deploy.mjs
+
       - name: Android projesini oluştur
+        env:
+          EXPO_PUBLIC_AI_URL: ${{ steps.ai.outputs.ai_url }}
         run: npx expo prebuild --platform android --no-install
 
       - name: APK derle
         working-directory: android
+        env:
+          EXPO_PUBLIC_AI_URL: ${{ steps.ai.outputs.ai_url }}
         run: |
+          echo "Yapay zekâ sunucusu: ${EXPO_PUBLIC_AI_URL:-yok}"
           ./gradlew assembleRelease --no-daemon
           mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/RuhHali.apk
 
@@ -54,5 +74,7 @@ jobs:
           body: |
             Telefona kurmak için aşağıdaki **RuhHali.apk** dosyasına dokun, indir ve aç.
             Android "bilinmeyen kaynak" uyarısı verirse: Ayarlar → Bu kaynağa izin ver → Yükle.
+
+            Yapay zekâ: ${{ steps.ai.outputs.ai_url && 'açık ✨' || 'kapalı (sunucu anahtarları henüz eklenmedi)' }}
           files: android/app/build/outputs/apk/release/RuhHali.apk
           make_latest: true
