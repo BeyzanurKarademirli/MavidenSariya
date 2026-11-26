@@ -19,6 +19,7 @@ export type Track = {
   durationMs?: number;
   genres: string[];
   lyrics?: string; // LRCLIB'den gelen düz şarkı sözü (varsa)
+  source?: string; // telefonda çalınan şarkılarda: hangi uygulamadan (YouTube Music, Spotify...)
   image?: string;
   playedAt?: string;
 };

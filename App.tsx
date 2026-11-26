@@ -13,6 +13,8 @@ import { alpha, DAWN, PARTICLES, Theme, themeFor, themeForMany } from './src/the
 import { FadeIn, Float, Glow, MoodBackground, Particles, PressableScale } from './src/ui';
 import { detectMood, MoodResult } from './src/mood';
 import { learn, loadModel, Model, resetModel } from './src/learning';
+import { clearDeviceHistory, deviceSupported, hasDevicePermission, openAppSettings, openDevicePermission, readDeviceHistory } from './src/device';
+import { getSource, setSource, Source } from './src/source';
 import {
   clearToken,
   discovery,
@@ -28,7 +30,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 const redirectUri = makeRedirectUri({ scheme: 'ruhhali', path: 'callback' });
 
-type Phase = 'checking' | 'login' | 'loading' | 'ready' | 'error';
+type Phase = 'checking' | 'login' | 'permission' | 'loading' | 'ready' | 'error';
 
 export default function App() {
   const [phase, setPhase] = useState<Phase>('checking');
@@ -44,6 +46,7 @@ export default function App() {
   const [loadingText, setLoadingText] = useState('Dinlediklerine bakıyorum…');
   const [demo, setDemo] = useState(false);
   const [chipsExpanded, setChipsExpanded] = useState(false);
+  const [source, setSourceState] = useState<Source | null>(null);
   const [model, setModel] = useState<Model | null>(null);
   // Geri bildirim durumu: none = sorulmadı, asking = 👎 dedi ve doğrusunu seçmesi bekleniyor, thanks = öğrenildi
   const [fb, setFb] = useState<{ state: 'none' | 'asking' | 'thanks'; note?: string }>({ state: 'none' });
@@ -65,10 +68,21 @@ export default function App() {
   const load = useCallback(async (silent = false) => {
     if (!silent) setPhase('loading');
     try {
-      const token = await loadAccessToken();
-      if (!token) return setPhase('login');
-      setLoadingText('Dinlediklerine bakıyorum…');
-      const list = await fetchListening(token);
+      let src = await getSource();
+      let list: Track[];
+      if (src === 'device' && deviceSupported) {
+        // Telefonda çalanlar (YouTube Music, Spotify, MP3 çalar...): bildirim erişimi gerekir
+        if (!hasDevicePermission()) return setPhase('permission');
+        setLoadingText('Telefonunda çalanlara bakıyorum…');
+        list = readDeviceHistory();
+      } else {
+        const token = await loadAccessToken();
+        if (!token) return setPhase('login');
+        if (!src) await setSource((src = 'spotify')); // eski sürümden gelen Spotify girişi
+        setLoadingText('Dinlediklerine bakıyorum…');
+        list = await fetchListening(token);
+      }
+      setSourceState(src);
       setLoadingText('Şarkı sözlerini okuyorum…');
       const withLyrics = await attachLyrics(list);
       const mdl = await loadModel();
@@ -96,6 +110,7 @@ export default function App() {
   }, [load]);
 
   // Uygulamaya geri dönünce ve açıkken her 2 dakikada bir dinlediklerini sessizce yenile
+  // Telefon kaynağında yerel geçmişe bakmak ucuz: 30 sn'de bir; Spotify'da 2 dakikada bir
   useEffect(() => {
     if (phase !== 'ready' || demo) return;
     const sub = AppState.addEventListener('change', (st) => {
@@ -103,12 +118,21 @@ export default function App() {
     });
     const timer = setInterval(() => {
       if (AppState.currentState === 'active') load(true);
-    }, 120_000);
+    }, source === 'device' ? 30_000 : 120_000);
     return () => {
       sub.remove();
       clearInterval(timer);
     };
-  }, [phase, demo, load]);
+  }, [phase, demo, load, source]);
+
+  // İzin ekranından ayarlara gidip dönünce izni yeniden kontrol et
+  useEffect(() => {
+    if (phase !== 'permission') return;
+    const sub = AppState.addEventListener('change', (st) => {
+      if (st === 'active' && hasDevicePermission()) load();
+    });
+    return () => sub.remove();
+  }, [phase, load]);
 
   // Spotify'dan dönen yetki kodunu token'a çevir (PKCE, istemci sırrı gerekmez)
   useEffect(() => {
@@ -126,6 +150,7 @@ export default function App() {
           discovery,
         );
         await saveToken(token);
+        await setSource('spotify');
         await load();
       } catch (e: any) {
         setError(String(e?.message ?? e));
@@ -223,6 +248,57 @@ export default function App() {
     );
   }
 
+  // ───────── Bildirim erişimi izni (telefonda çalanlar için) ─────────
+  if (phase === 'permission' && !demo) {
+    return (
+      <View style={[styles.fill, styles.center, { padding: 26 }]}>
+        <StatusBar style="light" />
+        <MoodBackground colors={DAWN} />
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false}>
+          <FadeIn>
+            <Text style={styles.permEmoji}>🎧</Text>
+            <Text style={styles.permTitle}>Telefonunda çalan şarkıyı görebilmem için izin gerekiyor</Text>
+            <Text style={styles.permText}>
+              Ruh Hâli; YouTube Music, Spotify, telefonundaki müzik çalar gibi hangi uygulamadan dinlersen dinle, çalan
+              şarkının <Text style={{ fontWeight: '700' }}>adını ve sanatçısını</Text> okuyabilmek için Android'in{' '}
+              <Text style={{ fontWeight: '700' }}>“bildirim erişimi”</Text> iznine ihtiyaç duyar.
+            </Text>
+            <View style={styles.permBox}>
+              <Text style={styles.permItem}>✓ Yalnızca çalan şarkının adı, sanatçısı ve hangi uygulamada çaldığı okunur.</Text>
+              <Text style={styles.permItem}>✓ Mesajların ve diğer bildirimlerin okunmaz, saklanmaz.</Text>
+              <Text style={styles.permItem}>✓ Dinleme geçmişin yalnızca bu telefonda tutulur.</Text>
+              <Text style={styles.permItem}>
+                ✓ Şarkı sözünü bulmak için yalnızca şarkı adı ve sanatçı, şarkı sözü servisine (LRCLIB) gönderilir.
+              </Text>
+              <Text style={styles.permItem}>✓ İstediğin zaman Ayarlar'dan izni geri alabilirsin.</Text>
+            </View>
+            <PressableScale style={[styles.btn, { backgroundColor: '#F0A548', alignSelf: 'center' }]} onPress={() => openDevicePermission()}>
+              <Text style={styles.btnText}>İzin ver</Text>
+            </PressableScale>
+            <Text style={styles.permHint}>
+              Açılan listede “Ruh Hâli”yi bulup izni aç, sonra geri dön.{'\n'}
+              Ruh Hâli gri ve açılamıyorsa (Android 13 ve sonrası, uygulama Play Store dışından kurulduğunda):
+            </Text>
+            <Pressable style={styles.linkBtn} onPress={() => openAppSettings()}>
+              <Text style={[styles.link, { color: '#FFF6E0', textAlign: 'center' }]}>
+                Uygulama bilgisi → sağ üstteki ⋮ → “Kısıtlanmış ayarlara izin ver”
+              </Text>
+            </Pressable>
+            <Pressable
+              style={styles.linkBtn}
+              onPress={async () => {
+                await setSource(null);
+                setPhase('login');
+              }}
+            >
+              <Text style={[styles.link, { color: 'rgba(255,246,224,0.7)', textAlign: 'center' }]}>Geri dön</Text>
+            </Pressable>
+          </FadeIn>
+        </ScrollView>
+      </View>
+    );
+  }
+
   // ───────── Giriş ─────────
   if ((phase === 'login' || phase === 'error') && !demo) {
     return (
@@ -245,15 +321,29 @@ export default function App() {
         <FadeIn delay={250} style={{ alignItems: 'center', width: '100%' }}>
           {phase === 'error' && <Text style={styles.error}>Bir sorun oldu: {error}</Text>}
           {!SPOTIFY_CLIENT_ID && <Text style={styles.error}>EXPO_PUBLIC_SPOTIFY_CLIENT_ID tanımlı değil (README'ye bakın).</Text>}
+          {deviceSupported && (
+            <PressableScale
+              style={[styles.btn, { backgroundColor: '#F0A548' }]}
+              onPress={async () => {
+                await setSource('device');
+                load();
+              }}
+            >
+              <Text style={styles.btnText}>🎧 Telefonumda çalanları kullan</Text>
+            </PressableScale>
+          )}
+          {deviceSupported && (
+            <Text style={styles.loginNote}>YouTube Music, Spotify, MP3 çalar… hangisinden dinlersen. Hesap gerekmez.</Text>
+          )}
           <PressableScale
-            style={[styles.btn, { backgroundColor: '#1DB954' }]}
+            style={[styles.btn, { backgroundColor: deviceSupported ? 'rgba(29,185,84,0.85)' : '#1DB954' }]}
             disabled={!request || !SPOTIFY_CLIENT_ID}
             onPress={() => promptAsync()}
           >
-            <Text style={styles.btnText}>Spotify ile bağlan</Text>
+            <Text style={styles.btnText}>Spotify hesabıyla bağlan</Text>
           </PressableScale>
           <Pressable style={styles.linkBtn} onPress={() => setDemo(true)}>
-            <Text style={[styles.link, { color: '#FFF6E0' }]}>Spotify olmadan dene, hâlimi kendim seçeyim</Text>
+            <Text style={[styles.link, { color: '#FFF6E0' }]}>Bağlanmadan dene, hâlimi kendim seçeyim</Text>
           </Pressable>
         </FadeIn>
       </View>
@@ -411,14 +501,29 @@ export default function App() {
             )}
 
             <Text style={[styles.section, { color: theme.text, marginTop: 26 }]}>Son dinlediklerin</Text>
-            {tracks.length === 0 && <Text style={[styles.evidence, { color: theme.sub, marginHorizontal: 20 }]}>Henüz dinleme geçmişi bulunamadı.</Text>}
+            {tracks.length === 0 && (
+              <Text style={[styles.evidence, { color: theme.sub, marginHorizontal: 20 }]}>
+                {source === 'device'
+                  ? 'Henüz çalan bir şarkı görmedim. Bir müzik uygulamasında (YouTube Music, Spotify, MP3 çalar…) şarkı aç; burada belirecek.'
+                  : 'Henüz dinleme geçmişi bulunamadı.'}
+              </Text>
+            )}
             {tracks.slice(0, 8).map((t, i) => (
               <FadeIn key={t.id + (t.playedAt ?? 'now')} delay={i * 60}>
                 <View style={styles.track}>
-                  {t.image ? <Image source={{ uri: t.image }} style={styles.cover} /> : <View style={styles.cover} />}
+                  {t.image ? (
+                    <Image source={{ uri: t.image }} style={styles.cover} />
+                  ) : (
+                    <View style={[styles.cover, styles.center]}>
+                      <Text style={{ fontSize: 18, color: theme.accent }}>♪</Text>
+                    </View>
+                  )}
                   <View style={{ flex: 1 }}>
                     <Text numberOfLines={1} style={[styles.trackName, { color: theme.text }]}>{t.name}</Text>
-                    <Text numberOfLines={1} style={[styles.trackArtist, { color: theme.faint }]}>{t.artists.join(', ')}</Text>
+                    <Text numberOfLines={1} style={[styles.trackArtist, { color: theme.faint }]}>
+                      {t.artists.join(', ')}
+                      {t.source ? ` · ${t.source}` : ''}
+                    </Text>
                   </View>
                   {!t.playedAt && <NowPlaying color="#1DB954" />}
                 </View>
@@ -432,10 +537,12 @@ export default function App() {
                 style={styles.linkBtn}
                 onPress={async () => {
                   await clearToken();
+                  await setSource(null);
+                  setSourceState(null);
                   setPhase('login');
                 }}
               >
-                <Text style={[styles.link, { color: theme.faint }]}>Çıkış yap</Text>
+                <Text style={[styles.link, { color: theme.faint }]}>Kaynağı değiştir</Text>
               </Pressable>
             </View>
             {!!model?.events && (
@@ -461,11 +568,31 @@ export default function App() {
                 </Text>
               </Pressable>
             )}
+            {source === 'device' && tracks.length > 0 && (
+              <Pressable
+                style={styles.linkBtn}
+                onPress={() =>
+                  Alert.alert('Dinleme geçmişini sil', 'Telefonda tutulan dinleme geçmişin silinecek. Emin misin?', [
+                    { text: 'Vazgeç', style: 'cancel' },
+                    {
+                      text: 'Sil',
+                      style: 'destructive',
+                      onPress: () => {
+                        clearDeviceHistory();
+                        load(true);
+                      },
+                    },
+                  ])
+                }
+              >
+                <Text style={[styles.link, { color: theme.faint, textAlign: 'center', fontSize: 12.5 }]}>🗑 Dinleme geçmişimi sil</Text>
+              </Pressable>
+            )}
           </>
         )}
         {demo && (
           <Pressable style={styles.linkBtn} onPress={() => { setDemo(false); setOverride(null); load(); }}>
-            <Text style={[styles.link, { textAlign: 'center', color: theme.accent }]}>Spotify ile bağlan</Text>
+            <Text style={[styles.link, { textAlign: 'center', color: theme.accent }]}>Dinlediklerime bağlan</Text>
           </Pressable>
         )}
 
@@ -559,6 +686,13 @@ const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
   loadingIcon: { width: 96, height: 96, borderRadius: 26 },
   loadingText: { color: '#FFF6E0', marginTop: 28, fontSize: 15, letterSpacing: 0.3 },
+  loginNote: { color: 'rgba(255,246,224,0.75)', fontSize: 12.5, textAlign: 'center', marginTop: 8, marginBottom: 6, paddingHorizontal: 12 },
+  permEmoji: { fontSize: 54, textAlign: 'center' },
+  permTitle: { color: '#FFF6E0', fontSize: 22, fontWeight: '800', textAlign: 'center', marginTop: 12, lineHeight: 29 },
+  permText: { color: 'rgba(255,246,224,0.88)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginTop: 14 },
+  permBox: { backgroundColor: 'rgba(13,17,23,0.35)', borderRadius: 18, padding: 16, marginTop: 18, gap: 8 },
+  permItem: { color: 'rgba(255,246,224,0.9)', fontSize: 13.5, lineHeight: 19 },
+  permHint: { color: 'rgba(255,246,224,0.72)', fontSize: 12.5, lineHeight: 18, textAlign: 'center', marginTop: 14 },
   loginIcon: { width: 120, height: 120, borderRadius: 32 },
   loginTitle: { fontSize: 38, fontWeight: '800', color: '#FFF6E0', marginTop: 28, letterSpacing: 0.5 },
   loginSub: { color: 'rgba(255,246,224,0.82)', textAlign: 'center', marginTop: 10, marginBottom: 30, fontSize: 15, lineHeight: 22 },

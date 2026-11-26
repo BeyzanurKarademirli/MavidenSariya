@@ -1,0 +1,7 @@
+{
+  "name": "now-playing",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "description": "Telefonda herhangi bir müzik uygulamasında çalan şarkıyı (Android medya oturumları) okur ve geçmişini tutar."
+}

@@ -4,11 +4,11 @@ Spotify'da dinlediğin şarkılardan o anki ruh hâlini tahmin eden ve sana uygu
 
 ## Nasıl çalışır?
 
-1. Spotify hesabınla bağlanırsın (yalnızca okuma izni: son dinlenenler + şu an çalan).
-2. Uygulama son ~30 şarkının adını, sanatçı türlerini ve dinleme saatini puanlar ve 31 hâlden birini tahmin eder.
-3. O hâle uygun en az bir ayet ve bir hadis gösterir. Tahmin yanlışsa tek dokunuşla düzeltebilirsin.
-
-> Not: Spotify, Kasım 2024'ten beri yeni uygulamalara şarkıların "valence/energy" verisini (audio-features) vermiyor. Bu yüzden tahmin şarkı adları ve türlere dayanıyor ve kesin değil; uygulama nedenini "Neden böyle düşündüm?" bölümünde gösteriyor.
+1. Dinlediklerin iki yoldan okunabilir:
+   - **Telefonumda çalanlar (Android, önerilen):** YouTube Music, Spotify, telefondaki MP3 çalar, Deezer, fizy… hangi uygulamadan dinlersen dinle çalan şarkı Android'in medya oturumlarından okunur. Hesap gerekmez; bir kez **bildirim erişimi** izni verilir. Dinleme geçmişi, uygulama kapalıyken de yalnızca telefonda tutulur (`modules/now-playing`).
+   - **Spotify hesabı:** Spotify'ın geliştirici modu sınırı nedeniyle en fazla 5 kişi bağlanabilir.
+2. Son dinlenen şarkıların adı, sözleri (LRCLIB) ve kişisel eğitim birlikte puanlanır; 31 hâlden en uygun 1–3'ü tahmin edilir.
+3. O hâllere uygun ayet ve hadisler sırayla gösterilir. Tahmin yanlışsa düzeltilebilir; uygulama düzeltmelerden öğrenir.
 
 ## Ruh hâlleri (31)
 
