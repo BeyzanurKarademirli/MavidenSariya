@@ -347,7 +347,7 @@ export default function App() {
         </FadeIn>
         <FadeIn delay={250} style={{ alignItems: 'center', width: '100%' }}>
           {phase === 'error' && <Text style={styles.error}>Bir sorun oldu: {error}</Text>}
-          {!SPOTIFY_CLIENT_ID && <Text style={styles.error}>EXPO_PUBLIC_SPOTIFY_CLIENT_ID tanımlı değil (README'ye bakın).</Text>}
+          {__DEV__ && !SPOTIFY_CLIENT_ID && <Text style={styles.error}>[Geliştirici] EXPO_PUBLIC_SPOTIFY_CLIENT_ID tanımlı değil.</Text>}
           {deviceSupported && (
             <PressableScale
               style={[styles.btn, { backgroundColor: '#F0A548' }]}
@@ -362,13 +362,15 @@ export default function App() {
           {deviceSupported && (
             <Text style={styles.loginNote}>YouTube Music, Spotify, MP3 çalar… hangisinden dinlersen. Hesap gerekmez.</Text>
           )}
-          <PressableScale
-            style={[styles.btn, { backgroundColor: deviceSupported ? 'rgba(29,185,84,0.85)' : '#1DB954' }]}
-            disabled={!request || !SPOTIFY_CLIENT_ID}
-            onPress={() => promptAsync()}
-          >
-            <Text style={styles.btnText}>Spotify hesabıyla bağlan</Text>
-          </PressableScale>
+          {!!SPOTIFY_CLIENT_ID && (
+            <PressableScale
+              style={[styles.btn, { backgroundColor: deviceSupported ? 'rgba(29,185,84,0.85)' : '#1DB954' }]}
+              disabled={!request}
+              onPress={() => promptAsync()}
+            >
+              <Text style={styles.btnText}>Spotify hesabıyla bağlan</Text>
+            </PressableScale>
+          )}
           <Pressable style={styles.linkBtn} onPress={() => setDemo(true)}>
             <Text style={[styles.link, { color: '#FFF6E0' }]}>Bağlanmadan dene, hâlimi kendim seçeyim</Text>
           </Pressable>
